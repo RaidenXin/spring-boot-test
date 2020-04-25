@@ -87,11 +87,14 @@ public class ConfigAspect {
         return builder.toString();
     }
 
-    @Pointcut("execution(* com.raiden.config.Config.get*(..))")
+    @Pointcut("@within(com.raiden.aop.I18nConfig)")
     public void executionGetConfigValue(){
     }
+    @Pointcut("execution(* get*()) || execution(* is*())")
+    public void executionGetConfigValue2(){
+    }
 
-    @Around("executionGetConfigValue();")
+    @Around("executionGetConfigValue() && executionGetConfigValue2()")
     public Object getConfigValue(ProceedingJoinPoint joinPoint){
         //获取方法名称
         String methodName = joinPoint.getSignature().getName();

@@ -1,6 +1,7 @@
 package com.raiden.config;
 
 import com.raiden.aop.ConfigValue;
+import com.raiden.aop.I18nConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Getter
 @Setter
+@I18nConfig
 public class Config {
 
     @ConfigValue("order.commodityName.{language}")

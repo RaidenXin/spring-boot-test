@@ -1,6 +1,7 @@
 package com.raiden.controller;
 
 import com.raiden.model.Order;
+import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,15 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private CacheService cacheService;
     @GetMapping("/getOrder/{language}")
     public Order getOrder(@RequestParam(name = "orderId")String orderId){
         return orderService.getOrder(orderId);
+    }
+
+    @GetMapping("/clearCache")
+    public void clearCache(String key){
+        cacheService.clearCache(key);
     }
 }
