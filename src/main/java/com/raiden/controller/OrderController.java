@@ -1,5 +1,6 @@
 package com.raiden.controller;
 
+import com.raiden.aop.annotation.CurrentLimiting;
 import com.raiden.model.Order;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
@@ -23,6 +24,15 @@ public class OrderController {
     @GetMapping("/getOrder/{language}")
     public Order getOrder(@RequestParam(name = "orderId")String orderId){
         return orderService.getOrder(orderId);
+    }
+
+    @CurrentLimiting
+    @GetMapping("/getUser/{language}")
+    public String getUser(@RequestParam(name = "id")String id,
+                         @RequestParam(name = "name")String name,
+                         @RequestParam(name = "age")String age,
+                         @RequestParam(name = "sex")String sex){
+        return orderService.getUser(id, name, age, sex);
     }
 
     @GetMapping("/clearCache")

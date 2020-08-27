@@ -29,4 +29,8 @@ public class OrderService {
         log.error("getOrder end");
         return order;
     }
+
+    public String getUser(String id, String name, String age, String sex){
+        return "hello word";
+    }
 }

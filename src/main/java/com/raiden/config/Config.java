@@ -1,7 +1,7 @@
 package com.raiden.config;
 
-import com.raiden.aop.ConfigValue;
-import com.raiden.aop.I18nConfig;
+import com.raiden.aop.annotation.ConfigValue;
+import com.raiden.aop.annotation.I18nConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;

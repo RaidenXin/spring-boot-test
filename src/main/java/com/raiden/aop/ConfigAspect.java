@@ -1,5 +1,6 @@
 package com.raiden.aop;
 
+import com.raiden.aop.annotation.ConfigValue;
 import com.raiden.config.Config;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -87,7 +88,7 @@ public class ConfigAspect {
         return builder.toString();
     }
 
-    @Pointcut("@within(com.raiden.aop.I18nConfig)")
+    @Pointcut("@within(com.raiden.aop.annotation.I18nConfig)")
     public void executionGetConfigValue(){
     }
     @Pointcut("execution(* get*()) || execution(* is*())")
