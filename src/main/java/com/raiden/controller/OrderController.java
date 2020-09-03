@@ -4,8 +4,12 @@ import com.raiden.aop.annotation.CurrentLimiting;
 import com.raiden.model.Order;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
+import com.raiden.task.DynamicScheduledTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.net.URLDecoder;
 
 /**
  * @创建人:Raiden
@@ -38,5 +42,19 @@ public class OrderController {
     @GetMapping("/clearCache")
     public void clearCache(String key){
         cacheService.clearCache(key);
+    }
+
+    @Autowired
+    private DynamicScheduledTask dynamicScheduledTask;
+
+    @GetMapping("/test1")
+    public void test1(String cron){
+        try {
+            String decode = URLDecoder.decode(cron, "UTF-8");
+            dynamicScheduledTask.setCron(decode);
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

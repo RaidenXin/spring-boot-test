@@ -5,7 +5,6 @@ import com.raiden.aop.annotation.I18nConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;
-
 /**
  * @创建人:Raiden
  * @Descriotion:
@@ -22,4 +21,6 @@ public class Config {
     private String commodityName;
     @ConfigValue("order.price")
     private double price;
+
+
 }
