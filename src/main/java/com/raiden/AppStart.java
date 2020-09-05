@@ -3,7 +3,6 @@ package com.raiden;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @创建人:Raiden
@@ -13,7 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableCaching
-@EnableScheduling
 public class AppStart {
 
     public static final void main(String[] args){

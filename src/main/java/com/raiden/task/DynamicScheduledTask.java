@@ -1,5 +1,6 @@
 package com.raiden.task;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -9,6 +10,9 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
  
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
  
 /**
@@ -46,5 +50,22 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
  
     public void setCron(String cron) {
         this.cron = cron;
+    }
+
+    private static final String[] getTableNameAll(String data){
+        if (StringUtils.isBlank(data)){
+            return new String[0];
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate localDate = LocalDate.parse(data + "01", formatter);
+        LocalDate now = LocalDate.now();
+        int until = (int) localDate.until(now, ChronoUnit.MONTHS) + 1;
+        String[] tableNames = new String[until];
+        String name = "uba_";
+        tableNames[0] = name + data;
+        for (int i = 1; i < until; i++){
+            tableNames[i] = name + formatter.format(localDate.plusMonths(i)).substring(0, 6);
+        }
+        return tableNames;
     }
 }
