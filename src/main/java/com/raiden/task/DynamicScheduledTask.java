@@ -53,19 +53,20 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
     }
 
     private static final String[] getTableNameAll(String data){
-        if (StringUtils.isBlank(data)){
-            return new String[0];
-        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate localDate = LocalDate.parse(data + "01", formatter);
         LocalDate now = LocalDate.now();
-        int until = (int) localDate.until(now, ChronoUnit.MONTHS) + 1;
-        String[] tableNames = new String[until];
-        String name = "uba_";
-        tableNames[0] = name + data;
-        for (int i = 1; i < until; i++){
-            tableNames[i] = name + formatter.format(localDate.plusMonths(i)).substring(0, 6);
+        if (StringUtils.isBlank(data)){
+            return getTableNameAll(formatter.format(now.plusMonths(-3)));
+        }else {
+            LocalDate localDate = LocalDate.parse(data, formatter);
+            int until = (int) localDate.until(now, ChronoUnit.MONTHS) + 1;
+            String[] tableNames = new String[until];
+            String name = "uba_";
+            tableNames[0] = name + data.substring(0, 6);
+            for (int i = 1; i < until; i++){
+                tableNames[i] = name + formatter.format(localDate.plusMonths(i)).substring(0, 6);
+            }
+            return tableNames;
         }
-        return tableNames;
     }
 }
