@@ -52,17 +52,22 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
         this.cron = cron;
     }
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    private static final String[] getTableNameAll(){
+        return getTableNameAll(LocalDate.now().plusMonths(-2).format(formatter));
+    }
+
     private static final String[] getTableNameAll(String data){
-        if (StringUtils.isBlank(data)){
+        if (StringUtils.isBlank(data) || data.length() < 8){
             return new String[0];
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate localDate = LocalDate.parse(data + "01", formatter);
+        LocalDate localDate = LocalDate.parse(data, formatter);
         LocalDate now = LocalDate.now();
         int until = (int) localDate.until(now, ChronoUnit.MONTHS) + 1;
         String[] tableNames = new String[until];
         String name = "uba_";
-        tableNames[0] = name + data;
+        tableNames[0] = name + data.substring(0, 6);
         for (int i = 1; i < until; i++){
             tableNames[i] = name + formatter.format(localDate.plusMonths(i)).substring(0, 6);
         }
