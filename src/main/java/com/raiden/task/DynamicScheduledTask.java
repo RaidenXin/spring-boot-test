@@ -19,7 +19,6 @@ import java.util.Date;
  * Created by loup on 2017/11/11.
  */
 @Component
-@EnableScheduling
 public class DynamicScheduledTask implements SchedulingConfigurer {
  
     //时间表达式  每2秒执行一次

@@ -25,4 +25,8 @@ public class Order {
         this.pirce = pirce;
         this.orderId = UUID.randomUUID().toString();
     }
+
+    public static String getId(){
+        return "1";
+    }
 }

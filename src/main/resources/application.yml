@@ -1,8 +1,15 @@
 server:
-  port: 8002
+  port: 8000
+
+spring:
+  application:
+    name: boot-demo-remote
+  profiles:
+    active: dev
   
 order:
   commodityName:
     zh: "五花肉"
     en: "Streaky Pork"
   price: 50.0
+

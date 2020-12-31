@@ -1,5 +1,6 @@
 package com.raiden.config;
 
+import com.raiden.annotation.NRpcScan;
 import com.raiden.aop.annotation.ConfigValue;
 import com.raiden.aop.annotation.I18nConfig;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @I18nConfig
+@NRpcScan(basePackage = "com.raiden.service")
 public class Config {
 
     @ConfigValue("order.commodityName.{language}")
@@ -22,5 +24,13 @@ public class Config {
     @ConfigValue("order.price")
     private double price;
 
+    public static class Plugin {
 
+        public static class SpringAnnotation {
+            /**
+             * regex expression to match spring bean classname
+             */
+            public static String CLASSNAME_MATCH_REGEX = "";
+        }
+    }
 }
