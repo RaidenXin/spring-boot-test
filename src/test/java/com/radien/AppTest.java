@@ -3,8 +3,11 @@ package com.radien;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raiden.config.Config;
 import com.raiden.model.URLInfo;
+import com.raiden.utils.JSONUtil;
 import com.raiden.utils.RoutingRulesUtils;
 import com.raiden.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +24,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -562,5 +567,45 @@ public class AppTest {
             }
         }
         return -1;
+    }
+
+    public void setUser(User<Permissions> user,Student<Permissions> student){
+
+    }
+
+    @Test
+    public void test19() throws IOException, NoSuchMethodException {
+        Method setUser = AppTest.class.getDeclaredMethod("setUser", User.class, Student.class);
+        String str = "{\n" +
+                "\t\"user\": {\n" +
+                "\t\t\"name\": \"张三\",\n" +
+                "\t\t\"t\": {\n" +
+                "\t\t\t\"name\": \"master\",\n" +
+                "\t\t\t\"ids\": [\"1\", \"2\", \"3\"]\n" +
+                "\t\t}\n" +
+                "\t},\n" +
+                "\t\"student\": {\n" +
+                "\t\t\"name\": \"初三一班\",\n" +
+                "\t\t\"code\":{\n" +
+                "\t\t\t\"name\": \"master\",\n" +
+                "\t\t\t\"ids\": [\"1\", \"2\", \"3\"]\n" +
+                "\t\t}\n" +
+                "\t},\n" +
+                "\t\"id\":1\n" +
+                "}";
+        Message object = JSONUtil.readValue(str, Message.class, setUser.getGenericParameterTypes());
+        System.err.println(object);
+    }
+
+    @Test
+    public void test20() throws IOException, NoSuchMethodException {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresDate = now.plusSeconds(60 * 60 * 24);
+        Date from = Date.from(expiresDate.toInstant(ZoneOffset.of("+8")));
+        System.err.println(from);
+    }
+
+    @Test
+    public void test21() throws IOException, NoSuchMethodException {
     }
 }
