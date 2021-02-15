@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- 日志文件输出设置 -->
+    <property name="LOG_FILE" value="${LOG_ROOT}/demo-web.%d{yyyy-MM-dd}"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 自定义 ThresholdFilter 动态根据ZK配置的日志级别过滤 -->
+       <!-- <filter class="com.gangling.logging.ThresholdFilter">
+            <level>info</level>  &lt;!&ndash; 默认日志级别 &ndash;&gt;
+            <appName>yw-crm-manage</appName>  &lt;!&ndash; 指定应用名 &ndash;&gt;
+        </filter>-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_FILE}-%i.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>30MB</maxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <pattern> %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{1000}-%M:%L - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    <!-- 控制台输出 （可选项） -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern> %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{1000}-%M:%L - %msg%n
+            </pattern>
+        </encoder>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <Pattern> [%tid] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{1000} -%msg%n</Pattern>
+            </layout>
+        </encoder>
+    </appender>
+    <!-- 定义logger -->
+
+    <springProfile name="dev,test,stg">
+        <!-- 打印sql -->
+        <logger name="druid.sql" level="info"/>
+        <logger name="org.springframework" level="debug"/>
+        <logger name="org.springframework.test" level="debug"/>
+        <logger name="com.gangling.architecture" level="DEBUG"/>
+        <root level="info">
+            <appender-ref ref="stdout"/>
+            <appender-ref ref="file"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="info">
+            <!-- 生产环境其实也可以开启控制台输出,因为生产环境进程启动时会忽略控制台日志,不存在日志文件文件过大-->
+            <!--<appender-ref ref="stdout"/>-->
+            <appender-ref ref="file"/>
+        </root>
+    </springProfile>
+
+    <include  optional="true" file="${LOG_ROOT}/logback-optional.xml"/>
+
+
+</configuration>

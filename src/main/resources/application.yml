@@ -7,6 +7,21 @@ order:
     en: "Streaky Pork"
   price: 50.0
 
+arch:
+  mq:
+    accesskey: ""
+    secretkey: ""
+    namesrvAddr: ""
+ccvs:
+  platform:
+    mq:
+      request.topic: TOPIC_CCSV_STANDARD_PLATFORM_SYNC_TEST
+      response.topic: TOPIC_CCSV_STANDARD_PLATFORM_SYNC_RESPONSE_TEST
+      callback.topic: TOPIC_CCSV_STANDARD_PLATFORM_CALLBACK_TEST
+      response.groupid: GID_CCSV_SP_SYNC_RESPONSE_TEST
+      callback.groupid: GID_CCSV_PLATFORM_CALLBACK_TEST #GID_CCSV_STANDARD_PLATFORM_CALLBACK
+
+
 
 warp:
   service:
