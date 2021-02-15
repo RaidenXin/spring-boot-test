@@ -3,6 +3,7 @@ package com.raiden.listener;
 import com.raiden.concurrent.CustomThreadPoolExecutor;
 import com.raiden.concurrent.listener.DefaultThreadPoolListener;
 import com.raiden.concurrent.listener.ThreadPoolListener;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageOrderlyService;
@@ -29,13 +30,14 @@ import java.util.stream.Collectors;
  * @Modified By:
  */
 @Component
+@Slf4j
 public class CustomApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
-        Map<String, DefaultRocketMQListenerContainer> beansOfType = applicationContext.getBeansOfType(DefaultRocketMQListenerContainer.class);
-        if (beansOfType != null){
-            beansOfType.entrySet().stream().forEach(d -> {
+        Map<String, DefaultRocketMQListenerContainer> beans = applicationContext.getBeansOfType(DefaultRocketMQListenerContainer.class);
+        if (beans != null){
+            beans.entrySet().stream().forEach(d -> {
                 DefaultRocketMQListenerContainer value = d.getValue();
                 DefaultMQPushConsumer consumer = value.getConsumer();
                 if (consumer != null){
@@ -72,6 +74,7 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
                     consumeExecutor.set(consumeMessageService, new CustomThreadPoolExecutor(threadPoolExecutor, listener, TimeUnit.MILLISECONDS));
                 }
             } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -80,10 +83,10 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
         if (applicationContext == null){
             return new ArrayList<>();
         }
-        Map<String, ThreadPoolListener> beansOfType = applicationContext.getBeansOfType(ThreadPoolListener.class);
-        if (beansOfType == null){
+        Map<String, ThreadPoolListener> beans = applicationContext.getBeansOfType(ThreadPoolListener.class);
+        if (beans == null){
             return new ArrayList<>();
         }
-        return beansOfType.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
+        return beans.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
     }
 }

@@ -121,5 +121,13 @@
             <artifactId>rocketmq-common</artifactId>
             <version>4.7.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+        </dependency>
+
     </dependencies>
 </project>
