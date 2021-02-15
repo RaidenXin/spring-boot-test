@@ -1,5 +1,7 @@
 package com.raiden.concurrent;
 
+import com.raiden.concurrent.listener.ThreadPoolListener;
+
 import java.util.concurrent.*;
 
 /**
@@ -10,8 +12,15 @@ import java.util.concurrent.*;
  */
 public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 
+    private ThreadPoolListener listener;
+
+    public CustomThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor,ThreadPoolListener listener,TimeUnit unit){
+        this(threadPoolExecutor, unit);
+        this.listener = listener;
+    }
+
     public CustomThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor,TimeUnit unit){
-        this(threadPoolExecutor.getCorePoolSize(), threadPoolExecutor.getMaximumPoolSize(), threadPoolExecutor.getKeepAliveTime(unit), unit, threadPoolExecutor.getQueue(), threadPoolExecutor.getThreadFactory());
+        this(threadPoolExecutor.getCorePoolSize(), threadPoolExecutor.getMaximumPoolSize(), threadPoolExecutor.getKeepAliveTime(unit), unit, threadPoolExecutor.getQueue(), threadPoolExecutor.getThreadFactory(), threadPoolExecutor.getRejectedExecutionHandler());
     }
 
     public CustomThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
@@ -32,8 +41,8 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
 
     public void execute(Runnable command) {
         BlockingQueue<Runnable> queue = super.getQueue();
-        if (!queue.isEmpty()){
-            System.err.println("线程池被打满");
+        if (!queue.isEmpty() && listener != null){
+            listener.callback();
         }
         super.execute(command);
     }

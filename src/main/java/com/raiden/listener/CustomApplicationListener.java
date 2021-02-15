@@ -1,6 +1,8 @@
 package com.raiden.listener;
 
 import com.raiden.concurrent.CustomThreadPoolExecutor;
+import com.raiden.concurrent.listener.DefaultThreadPoolListener;
+import com.raiden.concurrent.listener.ThreadPoolListener;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageOrderlyService;
@@ -13,9 +15,12 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @创建人:Raiden
@@ -37,14 +42,14 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
                     DefaultMQPushConsumerImpl defaultMQPushConsumerImpl = consumer.getDefaultMQPushConsumerImpl();
                     if (defaultMQPushConsumerImpl != null){
                         ConsumeMessageService consumeMessageService = defaultMQPushConsumerImpl.getConsumeMessageService();
-                        setThreadPoolExecutor(consumeMessageService);
+                        setThreadPoolExecutor(consumeMessageService, getListeners(applicationContext));
                     }
                 }
             });
         }
     }
 
-    private void setThreadPoolExecutor(ConsumeMessageService consumeMessageService){
+    private void setThreadPoolExecutor(ConsumeMessageService consumeMessageService,List<ThreadPoolListener> listeners){
         if (consumeMessageService == null){
             return;
         }
@@ -63,10 +68,22 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
                 Object o = consumeExecutor.get(consumeMessageService);
                 if (o instanceof ThreadPoolExecutor){
                     ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) o;
-                    consumeExecutor.set(consumeMessageService, new CustomThreadPoolExecutor(threadPoolExecutor, TimeUnit.MILLISECONDS));
+                    DefaultThreadPoolListener listener = new DefaultThreadPoolListener(listeners);
+                    consumeExecutor.set(consumeMessageService, new CustomThreadPoolExecutor(threadPoolExecutor, listener, TimeUnit.MILLISECONDS));
                 }
             } catch (Exception e) {
             }
         }
+    }
+
+    private List<ThreadPoolListener> getListeners(ApplicationContext applicationContext){
+        if (applicationContext == null){
+            return new ArrayList<>();
+        }
+        Map<String, ThreadPoolListener> beansOfType = applicationContext.getBeansOfType(ThreadPoolListener.class);
+        if (beansOfType == null){
+            return new ArrayList<>();
+        }
+        return beansOfType.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
     }
 }
