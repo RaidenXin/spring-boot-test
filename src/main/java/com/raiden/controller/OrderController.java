@@ -6,7 +6,6 @@ import com.raiden.model.User;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
 import com.raiden.task.DynamicScheduledTask;
-import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -37,8 +36,7 @@ public class OrderController {
 
     @GetMapping("/getOrder/{language}")
     public Order getOrder(@RequestParam(name = "orderId")String orderId){
-        String traceId = TraceContext.traceId();
-        return orderService.getOrder(traceId);
+        return orderService.getOrder(orderId);
     }
 
     @CurrentLimiting
@@ -75,11 +73,8 @@ public class OrderController {
     }
 
     @GetMapping("/testMeter")
-    public double testMeter(String meterName){
+    public double testMeter(String meterName) {
         return orderService.testMeter(meterName);
-    @GetMapping("/test3")
-    public String test3(@NotBlank(message = "不能为空") String name){
-            return wrapService.warp(name);
     }
 
     @GetMapping("/testMeter2")
