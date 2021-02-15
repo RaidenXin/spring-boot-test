@@ -49,5 +49,27 @@
             <artifactId>ehcache</artifactId>
             <version>2.8.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.raiden</groupId>
+            <artifactId>warp-spring-boot-starter</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
+            <version>4.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-common</artifactId>
+            <version>4.7.1</version>
+        </dependency>
     </dependencies>
 </project>

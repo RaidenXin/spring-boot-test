@@ -2,10 +2,12 @@ package com.raiden.controller;
 
 import com.raiden.aop.annotation.CurrentLimiting;
 import com.raiden.model.Order;
+import com.raiden.model.User;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
 import com.raiden.service.WrapService;
 import com.raiden.task.DynamicScheduledTask;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +29,7 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-    @Autowired
+    @Autowired(required = false)
     private CacheService cacheService;
     @Autowired
     private WrapService wrapService;
@@ -73,6 +75,17 @@ public class OrderController {
 
     @GetMapping("/test3")
     public String test3(@NotBlank(message = "不能为空") String name){
-        return wrapService.warp(name);
+            return wrapService.warp(name);
+    }
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
+
+    @GetMapping("/send")
+    public void send(){
+        //实体类User
+        User user = new User(999L, "testUser");
+        //发送自定对象
+        rocketMQTemplate.convertAndSend("test_topic", user);
     }
 }

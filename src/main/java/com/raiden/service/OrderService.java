@@ -1,5 +1,6 @@
 package com.raiden.service;
 
+import com.raiden.aop.annotation.CustomService;
 import com.raiden.config.Config;
 import com.raiden.model.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
+@CustomService
 public class OrderService {
 
     @Autowired

@@ -14,6 +14,11 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 public class User {
-    @NotBlank
+    private long id;
     private String name;
+
+    public User(long id, String name){
+        this.id = id;
+        this.name = name;
+    }
 }
