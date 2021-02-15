@@ -1,6 +1,7 @@
 package com.raiden.service;
 
 import com.raiden.concurrent.listener.ThreadPoolListener;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,9 +11,10 @@ import org.springframework.stereotype.Component;
  * @Modified By:
  */
 @Component
+@Slf4j
 public class TestThreadPoolListener implements ThreadPoolListener {
     @Override
     public void callback() {
-        System.err.println("class:" + this.getClass().getName());
+        log.error("线程池被打满!");
     }
 }
