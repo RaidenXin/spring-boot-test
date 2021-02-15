@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class CustomApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
+
+    private static final String CONSUME_EXECUTOR = "consumeExecutor";
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
@@ -65,7 +67,7 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
                 return;
             }
             try {
-                Field consumeExecutor = clazz.getDeclaredField("consumeExecutor");
+                Field consumeExecutor = clazz.getDeclaredField(CONSUME_EXECUTOR);
                 consumeExecutor.setAccessible(true);
                 Object o = consumeExecutor.get(consumeMessageService);
                 if (o instanceof ThreadPoolExecutor){
