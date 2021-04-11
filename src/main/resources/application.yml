@@ -39,3 +39,27 @@ warp:
 #    retry-times-when-send-async-failed: 0
 #    retry-next-server: true
 #    retry-times-when-send-failed: 2
+
+
+spring:
+  application:
+    name: sentinel-demo
+
+  cloud:
+    #配置sentinel客户端，注册该项目进控制台里
+    sentinel:
+      eager: true
+      transport:
+        #配置Sentin dashboard地址
+        dashboard: localhost:8080
+        # 默认8719端口，假如被占用了会自动从8719端口+1进行扫描，直到找到未被占用的 端口
+        port: 8719
+      #nacos  从nacos拉取数据需要配置
+      datasource:
+        #名称随意
+        flow:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-flow-rules
+            groupId: SENTINEL_GROUP
+            rule-type: flow
