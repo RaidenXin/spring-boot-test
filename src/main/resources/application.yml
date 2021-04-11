@@ -46,6 +46,9 @@ spring:
     name: sentinel-demo
 
   cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
     #配置sentinel客户端，注册该项目进控制台里
     sentinel:
       eager: true
@@ -60,6 +63,7 @@ spring:
         flow:
           nacos:
             server-addr: localhost:8848
+            namespace: sentinel-rule
             dataId: ${spring.application.name}-flow-rules
             groupId: SENTINEL_GROUP
             rule-type: flow

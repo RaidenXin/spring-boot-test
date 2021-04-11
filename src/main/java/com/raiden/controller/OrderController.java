@@ -1,6 +1,8 @@
 package com.raiden.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.raiden.aop.annotation.CurrentLimiting;
+import com.raiden.handler.CustomerBlockHandler;
 import com.raiden.model.Order;
 import com.raiden.model.User;
 import com.raiden.service.CacheService;
@@ -25,7 +27,7 @@ import java.util.List;
  * @Modified By:
  */
 @RestController
-@RequestMapping("Order")
+@RequestMapping("order")
 @Validated
 public class OrderController {
 
@@ -80,6 +82,12 @@ public class OrderController {
     @GetMapping("/testMeter2")
     public double testMeter2(String meterName){
         return orderService.testMeter(meterName);
+    }
+
+    @GetMapping("/testSentinel")
+    @SentinelResource(value = "testSentinel", fallbackClass = CustomerBlockHandler.class, fallback = "blocHandler")
+    public String testSentinel(){
+        return "seccess";
     }
 
 //
