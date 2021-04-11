@@ -18,6 +18,10 @@ public class CustomRegistry implements ResourceLoaderAware, ImportBeanDefinition
 
     private ResourceLoader resourceLoader;
 
+    public CustomRegistry(){
+        super();
+    }
+
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;

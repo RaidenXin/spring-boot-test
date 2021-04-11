@@ -82,15 +82,15 @@ public class OrderController {
         return orderService.testMeter(meterName);
     }
 
-
-    @Autowired
-    private RocketMQTemplate rocketMQTemplate;
-
-    @GetMapping("/send")
-    public void send(){
-        //实体类User
-        User user = new User(999L, "testUser");
-        //发送自定对象
-        rocketMQTemplate.convertAndSend("test_topic", user);
-    }
+//
+//    @Autowired
+//    private RocketMQTemplate rocketMQTemplate;
+//
+//    @GetMapping("/send")
+//    public void send(){
+//        //实体类User
+//        User user = new User(999L, "testUser");
+//        //发送自定对象
+//        rocketMQTemplate.convertAndSend("test_topic", user);
+//    }
 }

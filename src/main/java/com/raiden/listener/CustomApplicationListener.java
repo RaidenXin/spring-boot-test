@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @Date:Created in 13:40 2021/2/15
  * @Modified By:
  */
-@Component
+//@Component
 @Slf4j
 public class CustomApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
