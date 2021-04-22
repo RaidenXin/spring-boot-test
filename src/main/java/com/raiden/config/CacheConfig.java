@@ -17,9 +17,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CacheConfig {
 
-    public CacheConfig(){
-        super();
-    }
 
     @Bean
     public CacheService cacheService(@Autowired(required = false)@Qualifier("cache") Cache cache, @Autowired(required = false)CacheManager cacheManager){

@@ -42,7 +42,7 @@ public class CustomThreadPoolExecutor extends ThreadPoolExecutor {
     public void execute(Runnable command) {
         BlockingQueue<Runnable> queue = super.getQueue();
         if (!queue.isEmpty() && listener != null){
-            listener.callback();
+            listener.callback(this);
         }
         super.execute(command);
     }

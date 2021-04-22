@@ -1,5 +1,7 @@
 package com.raiden.concurrent.listener;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * @创建人:Raiden
  * @Descriotion:
@@ -7,5 +9,5 @@ package com.raiden.concurrent.listener;
  * @Modified By:
  */
 public interface ThreadPoolListener {
-    void callback();
+    void callback(ThreadPoolExecutor executor);
 }

@@ -6,12 +6,12 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
-@RocketMQMessageListener(
-        topic = "test_topic",
-        consumerGroup = "test_my-consumer",
-        consumeThreadMax = 2,
-        selectorExpression = "*")
-@Component
+//@RocketMQMessageListener(
+//        topic = "test_topic",
+//        consumerGroup = "test_my-consumer",
+//        consumeThreadMax = 2,
+//        selectorExpression = "*")
+//@Component
 public class UserListner implements RocketMQListener<MessageExt> {
 
     @Override

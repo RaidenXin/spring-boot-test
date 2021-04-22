@@ -1,22 +1,22 @@
 package com.raiden.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.gangling.architecture.application.model.facade.FacadeResponse;
+import com.netflix.ribbon.proxy.annotation.Hystrix;
 import com.raiden.aop.annotation.CurrentLimiting;
-import com.raiden.model.Order;
 import com.raiden.model.User;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
 import com.raiden.task.DynamicScheduledTask;
+import com.yi.arch.demo.api.facade.user.UserInfoFacade;
+import com.yi.arch.demo.api.model.user.UserInfo;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @创建人:Raiden
@@ -26,18 +26,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("Order")
-@Validated
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private UserInfoFacade userInfoFacade;
     @Autowired(required = false)
     private CacheService cacheService;
-
-    @GetMapping("/getOrder/{language}")
-    public Order getOrder(@RequestParam(name = "orderId")String orderId){
-        return orderService.getOrder(orderId);
-    }
 
     @CurrentLimiting
     @GetMapping("/getUser/{language}")
@@ -47,6 +43,15 @@ public class OrderController {
                          @RequestParam(name = "sex")String sex){
         return orderService.getUser(id, name, age, sex);
     }
+
+
+    @GetMapping("/findByUserId")
+    public FacadeResponse<UserInfo> findByUserId(Long id){
+        FacadeResponse<UserInfo> byUserId = userInfoFacade.findByUserId(id);
+        return byUserId;
+    }
+
+
 
     @GetMapping("/clearCache")
     public void clearCache(String key){
@@ -93,4 +98,5 @@ public class OrderController {
         //发送自定对象
         rocketMQTemplate.convertAndSend("test_topic", user);
     }
+
 }

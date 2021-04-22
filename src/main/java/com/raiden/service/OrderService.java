@@ -27,18 +27,6 @@ public class OrderService {
 
     @Autowired
     private Config config;
-    @Autowired
-    private CommService commService;
-
-    @Cacheable(value="cacheTest", key="'CacheKey:'+#orderId")
-    public Order getOrder(String orderId) {
-        log.error("getOrder start");
-        log.error("key:CacheKey:" + orderId);
-        String menberId = "111";
-        Order order = new Order(menberId, config.getCommodityName(), config.getPrice());
-        log.error("getOrder end");
-        return commService.getOrder(orderId);
-    }
 
     public String getUser(String id, String name, String age, String sex){
         return "hello word";
