@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @创建人:Raiden
@@ -42,9 +43,9 @@ public class DefaultThreadPoolListener implements ThreadPoolListener{
     }
 
     @Override
-    public void callback() {
+    public void callback(ThreadPoolExecutor executor) {
         if (listeners != null){
-            listeners.forEach(ThreadPoolListener::callback);
+            listeners.forEach(t -> t.callback(executor));
         }
     }
 }

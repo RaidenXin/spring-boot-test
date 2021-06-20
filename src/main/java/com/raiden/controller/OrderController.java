@@ -44,9 +44,9 @@ public class OrderController {
     @CurrentLimiting
     @GetMapping("/getUser/{language}")
     public String getUser(@RequestParam(name = "id")String id,
-                         @RequestParam(name = "name")String name,
-                         @RequestParam(name = "age")String age,
-                         @RequestParam(name = "sex")String sex){
+                          @RequestParam(name = "name")String name,
+                          @RequestParam(name = "age")String age,
+                          @RequestParam(name = "sex")String sex){
         return orderService.getUser(id, name, age, sex);
     }
 

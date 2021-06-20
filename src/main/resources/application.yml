@@ -1,6 +1,13 @@
 server:
   port: 8002
-  
+
+spring:
+  application:
+    name: service-consumer
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 10.6.124.132:8848 #,10.6.124.133:8848,10.6.124.134:8848
 order:
   commodityName:
     zh: "五花肉"
@@ -21,7 +28,9 @@ ccvs:
       response.groupid: GID_CCSV_SP_SYNC_RESPONSE_TEST
       callback.groupid: GID_CCSV_PLATFORM_CALLBACK_TEST #GID_CCSV_STANDARD_PLATFORM_CALLBACK
 
-
+feign:
+  sentinel:
+    enabled: true
 
 warp:
   service:

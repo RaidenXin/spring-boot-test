@@ -4,6 +4,8 @@ import com.raiden.concurrent.listener.ThreadPoolListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * @创建人:Raiden
  * @Descriotion:
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class TestThreadPoolListener implements ThreadPoolListener {
     @Override
-    public void callback() {
+    public void callback(ThreadPoolExecutor executor) {
         log.error("线程池被打满!");
     }
 }

@@ -6,6 +6,11 @@ public class Permissions {
     private String name;
     private List<String> ids;
 
+    public Permissions(String name,List<String> ids){
+        this.ids = ids;
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

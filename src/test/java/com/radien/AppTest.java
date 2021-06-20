@@ -10,12 +10,14 @@ import com.raiden.model.URLInfo;
 import com.raiden.utils.JSONUtil;
 import com.raiden.utils.RoutingRulesUtils;
 import com.raiden.utils.UrlUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -23,10 +25,14 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -575,25 +581,11 @@ public class AppTest {
 
     @Test
     public void test19() throws IOException, NoSuchMethodException {
-        Method setUser = AppTest.class.getDeclaredMethod("setUser", User.class, Student.class);
         String str = "{\n" +
-                "\t\"user\": {\n" +
-                "\t\t\"name\": \"张三\",\n" +
-                "\t\t\"t\": {\n" +
-                "\t\t\t\"name\": \"master\",\n" +
-                "\t\t\t\"ids\": [\"1\", \"2\", \"3\"]\n" +
-                "\t\t}\n" +
-                "\t},\n" +
-                "\t\"student\": {\n" +
-                "\t\t\"name\": \"初三一班\",\n" +
-                "\t\t\"code\":{\n" +
-                "\t\t\t\"name\": \"master\",\n" +
-                "\t\t\t\"ids\": [\"1\", \"2\", \"3\"]\n" +
-                "\t\t}\n" +
-                "\t},\n" +
-                "\t\"id\":1\n" +
+                "\t\"name\": \"11\",\n" +
+                "\t\"ids\": [\"1\", \"2\"]\n" +
                 "}";
-        Message object = JSONUtil.readValue(str, Message.class, setUser.getGenericParameterTypes());
+        Permissions object = JSON.parseObject(str, Permissions.class);
         System.err.println(object);
     }
 
@@ -607,5 +599,47 @@ public class AppTest {
 
     @Test
     public void test21() throws IOException, NoSuchMethodException {
+        PriorityBlockingQueue<String> queue = new PriorityBlockingQueue<>();
+        queue.add("1");
+        queue.add("2");
+        queue.add("3");
+        queue.add("4");
+        System.err.println(queue.peek());
+        for (;!queue.isEmpty();){
+            System.err.println(queue.poll());
+        }
+    }
+
+    @Test
+    public void test22() throws IOException, NoSuchMethodException {
+        List<String> list = new ArrayList<>();
+        list.add("1");
+        list.add("2");
+        list.add("3");
+        Thread thread = new Thread(() -> {
+            for (int i = 0;i < 100000000;i++){
+                synchronized (list){
+                    list.add(String.valueOf(i));
+                }
+            }
+        });
+        thread.start();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        List<String> list2 = new ArrayList<>();
+        synchronized (list){
+            list2 = new ArrayList<>(list);
+        }
+        list2.stream().forEach(a -> System.err.println(a));
+    }
+
+    @Test
+    public void test23() throws Exception {
+        Integer i = 1;
+        Integer i2 = 1;
+        System.err.println(i.equals(i2));
     }
 }

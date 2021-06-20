@@ -31,7 +31,7 @@ public class CustomPathScanHandle extends ClassPathBeanDefinitionScanner {
     protected void registerBeanDefinition(BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry) {
         GenericBeanDefinition definition = (GenericBeanDefinition) definitionHolder.getBeanDefinition();
         definition.getPropertyValues().add("interfaceClass", definition.getBeanClassName());
-        definition.setBeanClass(ProxyBeanFactory.class);
+//        definition.setBeanClass(ProxyBeanFactory.class);
         definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
         BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
     }
