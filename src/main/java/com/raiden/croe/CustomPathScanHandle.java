@@ -15,7 +15,7 @@ import java.util.Set;
 public class CustomPathScanHandle extends ClassPathBeanDefinitionScanner {
 
     public CustomPathScanHandle(BeanDefinitionRegistry registry, boolean useDefaultFilters) {
-        super(registry, useDefaultFilters);
+         super(registry, useDefaultFilters);
     }
 
     @Override

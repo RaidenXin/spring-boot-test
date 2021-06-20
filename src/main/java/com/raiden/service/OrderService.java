@@ -50,4 +50,8 @@ public class OrderService {
         histogram.addValue(3);
         return 1;
     }
+
+    public Order getOrder(String orderId) {
+        return null;
+    }
 }

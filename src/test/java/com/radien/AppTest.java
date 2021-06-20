@@ -10,6 +10,7 @@ import com.raiden.model.URLInfo;
 import com.raiden.utils.JSONUtil;
 import com.raiden.utils.RoutingRulesUtils;
 import com.raiden.utils.UrlUtils;
+import com.raiden.utils.WaitingUtil;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,7 @@ import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -637,9 +636,24 @@ public class AppTest {
     }
 
     @Test
-    public void test23() throws Exception {
+    public void test24() throws Exception {
         Integer i = 1;
         Integer i2 = 1;
         System.err.println(i.equals(i2));
+        int a = 10;
+        int b = 20;
+        b = a ^ b;
+        a = a ^ b;
+        b = b ^ a;
+        System.out.println("a-------------------->" + a);
+        System.out.println("b-------------------->" + b);
+    }
+
+    @Test
+    public void test25() throws IOException, NoSuchMethodException {
+        ExecutorService executorService = new ThreadPoolExecutor(1, 1, 100L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(0));
+        executorService.execute(() -> System.out.println(1111));
+        WaitingUtil.waiting(1000);
+        executorService.execute(() -> System.out.println(2222));
     }
 }
