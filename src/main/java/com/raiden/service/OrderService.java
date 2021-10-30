@@ -1,7 +1,9 @@
 package com.raiden.service;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.raiden.aop.annotation.CustomService;
 import com.raiden.config.Config;
+import com.raiden.handler.CustomerBlockHandler;
 import com.raiden.model.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.apm.toolkit.meter.Counter;
@@ -43,7 +45,7 @@ public class OrderService {
         counter.increment(1d);
         return counter.get();
     }
-
+    @SentinelResource(value = "testMeter2", fallbackClass = CustomerBlockHandler.class, fallback = "blocHandler")
     public double testMeter2(String meterName){
         log.error(meterName);
         Histogram histogram = MeterFactory.histogram("test").tag("tagKey", "tagValue").steps(Arrays.<Double>asList(1.0D, 5.0D, 10.0D)).minValue(0).build();

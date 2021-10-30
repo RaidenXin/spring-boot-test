@@ -3,6 +3,8 @@ package com.raiden.controller;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.raiden.aop.annotation.CurrentLimiting;
 import com.raiden.handler.CustomerBlockHandler;
+import com.raiden.service.InstanceService;
+import com.raiden.handler.InstanceStatusHandler;
 import com.raiden.model.Order;
 import com.raiden.model.User;
 import com.raiden.service.CacheService;
@@ -90,15 +92,19 @@ public class OrderController {
         return "seccess";
     }
 
-//
-//    @Autowired
-//    private RocketMQTemplate rocketMQTemplate;
-//
-//    @GetMapping("/send")
-//    public void send(){
-//        //实体类User
-//        User user = new User(999L, "testUser");
-//        //发送自定对象
-//        rocketMQTemplate.convertAndSend("test_topic", user);
-//    }
+
+    @Autowired
+    private InstanceService instanceService;
+
+    @GetMapping("/disable")
+    public String disable(){
+        boolean disable = instanceService.disable();
+        return "seccess";
+    }
+
+    @GetMapping("/enable")
+    public String enable(){
+        boolean enable = instanceService.enable();
+        return "seccess";
+    }
 }

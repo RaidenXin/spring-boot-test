@@ -30,7 +30,6 @@ public class CustomRegistry implements ResourceLoaderAware, ImportBeanDefinition
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
-
         //获取所有注解的属性和值
         AnnotationAttributes annoAttrs = AnnotationAttributes.fromMap(annotationMetadata.getAnnotationAttributes(NRpcScan.class.getName()));
         //获取到basePackage的值

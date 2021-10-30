@@ -24,13 +24,5 @@ public class Config {
     @ConfigValue("order.price")
     private double price;
 
-    public static class Plugin {
 
-        public static class SpringAnnotation {
-            /**
-             * regex expression to match spring bean classname
-             */
-            public static String CLASSNAME_MATCH_REGEX = "";
-        }
-    }
 }
