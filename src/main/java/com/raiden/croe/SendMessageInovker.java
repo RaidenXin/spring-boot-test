@@ -1,7 +1,7 @@
 package com.raiden.croe;
 
 
-import com.raiden.config.Config;
+import com.raiden.config.CommonConfiguration;
 import com.raiden.model.Order;
 
 import java.lang.reflect.InvocationHandler;
@@ -12,9 +12,9 @@ import java.lang.reflect.Method;
  */
 public class SendMessageInovker implements InvocationHandler {
 
-    private Config config;
+    private CommonConfiguration config;
 
-    public SendMessageInovker(Config config){
+    public SendMessageInovker(CommonConfiguration config){
         this.config = config;
     }
 

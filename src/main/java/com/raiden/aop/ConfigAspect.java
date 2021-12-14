@@ -1,7 +1,7 @@
 package com.raiden.aop;
 
 import com.raiden.aop.annotation.ConfigValue;
-import com.raiden.config.Config;
+import com.raiden.config.CommonConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -45,7 +45,7 @@ public class ConfigAspect {
 
     @PostConstruct
     private void initCach(){
-        Class clazz = Config.class;
+        Class clazz = CommonConfiguration.class;
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields){
             String fieldName = field.getName();

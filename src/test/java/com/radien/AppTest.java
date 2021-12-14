@@ -1,39 +1,27 @@
 package com.radien;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.raiden.config.Config;
 import com.raiden.model.URLInfo;
-import com.raiden.utils.JSONUtil;
-import com.raiden.utils.RoutingRulesUtils;
-import com.raiden.utils.UrlUtils;
-import com.raiden.utils.WaitingUtil;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.raiden.utils.*;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -560,7 +548,7 @@ public class AppTest {
         int end = arr.length - 1;
         //核心在这 双指针到底是要 <= 因为 如果长度为 1 呢 是不是等于
         while (start <= end) {
-            int middle = (start + end) / 2;
+            int middle = (start + end) >> 1;
             if (key < arr[middle]) {
                 //为什么 减1 因为 下标为 middle 的数不是要找的
                 //只要找他前面的就行了 下面 +1 相同
@@ -572,10 +560,6 @@ public class AppTest {
             }
         }
         return -1;
-    }
-
-    public void setUser(User<Permissions> user,Student<Permissions> student){
-
     }
 
     @Test
@@ -656,4 +640,410 @@ public class AppTest {
         WaitingUtil.waiting(1000);
         executorService.execute(() -> System.out.println(2222));
     }
+
+
+    class LRUCache {
+
+        private Map<Integer, LRUNode> cache;
+
+        private LRUNode head;
+
+        private LRUNode tail;
+
+        private int capacity;
+
+        private int length;
+
+        public LRUCache(int capacity) {
+            this.capacity = capacity;
+            cache = new HashMap<>(capacity << 1);
+        }
+
+        public int get(int key) {
+            LRUNode lruNode = cache.get(key);
+            boolean isNonNull = lruNode != null;
+            if (isNonNull && lruNode != this.head){
+                disconnectTheList(lruNode);
+                setHead(lruNode);
+            }
+            System.out.println(isNonNull ? lruNode.getValue() : -1);
+            return isNonNull ? lruNode.getValue() : -1;
+        }
+
+        public void put(int key, int value) {
+            //容量没有满不需要淘汰
+            LRUNode lruNode = cache.get(key);
+            boolean isNonHead = this.head != null;
+            //新增
+            if (lruNode == null){
+                lruNode = new LRUNode(key, value);
+                cache.put(key, lruNode);
+                lruNode.setValue(value);
+                if (length == capacity){
+                    //最后一个即是最近最少使用的
+                    //所以淘汰它
+                    LRUNode tail = this.tail;
+                    LRUNode pre = tail.pre();
+                    pre.setNext(null);
+                    this.tail = pre;
+                    //删除淘汰的缓存
+                    cache.remove(tail.getKey());
+                }else {
+                    //新增总数目+1
+                    this.length++;
+                }
+            }else {
+                //修改
+                lruNode.setValue(value);
+                //如果不是头部 要放入头部
+                if (isNonHead = lruNode != this.head){
+                    disconnectTheList(lruNode);
+                }
+            }
+            if (isNonHead){
+                //最新的放入头部
+                setHead(lruNode);
+            }else {
+                this.head = lruNode;
+                this.tail = lruNode;
+            }
+        }
+
+        /**
+         * 断开连接的链表
+         */
+        private void disconnectTheList(LRUNode lruNode){
+            LRUNode pre = lruNode.pre();
+            LRUNode next = lruNode.next();
+            pre.setNext(next);
+            if (next != null){
+                next.setPre(pre);
+            }else {
+                //如果节点的下一个为空就证明这个节点是尾部,
+                // 将它放入头部时要对将它的前一个赋值为尾部
+                this.tail = pre;
+            }
+        }
+
+        private void setHead(LRUNode lruNode){
+            LRUNode head = this.head;
+            head.setPre(lruNode);
+            lruNode.setPre(null);
+            lruNode.setNext(head);
+            this.head = lruNode;
+        }
+
+        class LRUNode{
+            private LRUNode pre;
+            private LRUNode next;
+            private int key;
+            private int value;
+
+            public LRUNode(int key,int value){
+                this.key = key;
+                this.value = value;
+            }
+
+            private LRUNode pre(){
+                return pre;
+            }
+            private LRUNode next(){
+                return next;
+            }
+
+            public void setPre(LRUNode pre) {
+                this.pre = pre;
+            }
+
+            public void setNext(LRUNode next) {
+                this.next = next;
+            }
+
+            public int getKey() {
+                return key;
+            }
+
+            public int getValue() {
+                return value;
+            }
+
+            public void setValue(int value) {
+                this.value = value;
+            }
+        }
+    }
+
+    @Test
+    public void test27() throws UnsupportedEncodingException {
+        LRUCache lRUCache = new LRUCache(2);
+        lRUCache.put(1, 1); // 缓存是 {1=1}
+        lRUCache.put(2, 2); // 缓存是 {1=1, 2=2}
+        lRUCache.get(1);    // 返回 1
+        lRUCache.put(3, 3); // 该操作会使得关键字 2 作废，缓存是 {1=1, 3=3}
+        lRUCache.get(2);    // 返回 -1 (未找到)
+        lRUCache.put(4, 4); // 该操作会使得关键字 1 作废，缓存是 {4=4, 3=3}
+        lRUCache.get(1);    // 返回 -1 (未找到)
+        lRUCache.get(3);    // 返回 3
+        lRUCache.get(4);    // 返回 4
+    }
+
+    @Test
+    public void test28() throws UnsupportedEncodingException {
+        int[] nums = {1,2,2,4};
+        System.out.println(findErrorNums(nums));
+    }
+
+    public int[] findErrorNums(int[] nums) {
+        int[] newNums = new int[nums.length];
+        for (int i : nums) {
+            newNums[i - 1]++;
+        }
+        int[] result = new int[2];
+        for (int i = 0; i < newNums.length; i++){
+            result[0] = newNums[i] > 1 ? i + 1 : result[0];
+            result[1] = newNums[i]  == 0 ? i + 1 : result[1];
+        }
+        return result;
+    }
+
+    @Test
+    public void test29() throws UnsupportedEncodingException {
+        for (int i = 1; i < 200;i++){
+            int[] ints = AlgorithmUtils.creatsIntArr(i);
+            int i1 = maxSubArray(ints);
+            int i2 = maxSubArray2(ints);
+            if (i1 != i2){
+                throw new IllegalAccessError("这里错了i1：" + i1 + "  i2：" + i2);
+            }
+        }
+    }
+
+
+    public int maxSubArray(int[] nums) {
+        int sum = nums[0];
+        int result = sum;
+        for (int i= 1; i < nums.length ; i++) {
+            if (sum < 0){
+                sum = 0;
+            }
+            sum = sum + nums[i];
+            if (sum > result){
+                result = sum;
+            }
+        }
+        return result;
+    }
+
+    public int maxSubArray2(int[] nums) {
+        int pre = 0, maxAns = nums[0];
+        for (int x : nums) {
+            pre = Math.max(pre + x, x);
+            maxAns = Math.max(maxAns, pre);
+        }
+        return maxAns;
+    }
+
+    public String maximumTime(String time) {
+        char[] chars = time.toCharArray();
+        if (chars[0] == '?'){
+            chars[0] = chars[1] >= '4' && chars[1] <= 9 ? '1' : '2';
+        }
+        if (chars[1] == '?'){
+            chars[1] = chars[0] == '2'? '3' : '9';
+        }
+        if (chars[3] == '?'){
+            chars[3] = '5';
+        }
+        if (chars[4] == '?'){
+            chars[4] = '9';
+        }
+        return new String(chars);
+    }
+
+
+    @Test
+    public void test30() throws Exception {
+        CompletableFuture<Long> future = CompletableFuture.supplyAsync(new Supplier<Long>() {
+            @Override
+            public Long get() {
+                long result = new Random().nextInt(100);
+                System.out.println("result1="+result);
+                return result;
+            }
+        }).thenApply(new Function<Long, Long>() {
+            @Override
+            public Long apply(Long t) {
+                long result = t*5;
+                System.out.println("result2="+result);
+                return result;
+            }
+        });
+
+        long result = future.get();
+        System.out.println(result);
+    }
+
+    @Test
+    public void test31() throws Exception {
+        System.err.println(fib(3));
+        System.err.println(fib(4));
+    }
+
+    public int fib(int n) {
+        if (n < 2){
+            return n;
+        }
+        int a = 0, b = 1, c = 1;
+        for (int i = 2; i < n; i++){
+            a = b;
+            b = c;
+            c = a + b;
+        }
+        return c;
+    }
+
+    @Test
+    public void test32() throws Exception {
+        System.err.println(tribonacci(3));
+        System.err.println(tribonacci(25));
+    }
+
+    public long tribonacci(int n) {
+        if (n < 2){
+            return n;
+        }
+        if (n == 2){
+            return 1;
+        }
+        int a = 0, b = 1, c = 1, d = 2;
+        for (int i = 3; i < n; i++){
+            a = b;
+            b = c;
+            c = d;
+            d = a + b + c;
+        }
+        return d;
+    }
+
+    @Test
+    public void test33() throws Exception {
+        System.err.println(firstBadVersion(2));
+    }
+
+
+    public int firstBadVersion(int n) {
+        int left = 1,right = n, version = n;
+        while (left < right){
+            version = left + ((right - left) >> 1);
+            if (isBadVersion(version)){
+                right = version;
+            }else {
+                left = version + 1;
+            }
+        }
+        return left;
+    }
+
+    private boolean isBadVersion(int version){
+        return version >= 2;
+    }
+
+
+    @Test
+    public void test34() throws Exception {
+        int target = 0;
+        for (int i = 4; i < 100; i++){
+            int[] nums = AlgorithmUtils.creatsIntArr(i);
+            target += (int) (Math.random() * 10);
+            if (searchInsert(nums, target) != searchInsert2(nums, target)){
+                System.err.println("出错了！target:" + target);
+                System.err.println(Arrays.toString(nums));
+            }
+        }
+    }
+
+    public int searchInsert(int[] nums, int target) {
+        int left = 0,right = nums.length - 1,min;
+        while (left < right){
+            min = left + ((right - left) >> 1);
+            if (nums[min] == target){
+                return min;
+            }else if (nums[min] > target){
+                right = min - 1;
+            }else {
+                left = min + 1;
+            }
+        }
+        if (nums[left] < target){
+            left += 1;
+        }
+        return left;
+    }
+    public int searchInsert2(int[] nums, int target) {
+        int n = nums.length;
+        int left = 0, right = n - 1, ans = n;
+        while (left <= right) {
+            int mid = ((right - left) >> 1) + left;
+            if (target <= nums[mid]) {
+                ans = mid;
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    @Test
+    public void test35() throws Exception {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                // 改值在FeignClient体系中会被动态覆盖
+                .connectTimeout(6, TimeUnit.SECONDS)
+                // 添加拦截器，支持动态设置超时时间
+                .addInterceptor(new Interceptor() {
+                    @NotNull
+                    @Override
+                    public Response intercept(@NotNull Chain chain) throws IOException {
+                        System.err.println();
+                        return null;
+                    }
+                })
+                .build();
+        String url = "http://127.0.0.1:8100/getMemberList?name=xinlei";
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+        final Call call = client.newCall(request);
+        Response response = call.execute();
+        System.out.println(response.body().string());
+    }
+
+    @Test
+    public void test36() throws Exception {
+        Method searchInsert = this.getClass().getMethod("searchInsert2", new Class[]{int[].class, int.class});
+        Parameter[] parameters = searchInsert.getParameters();
+        for (Parameter parameter : parameters) {
+            System.err.println(parameter.getName());
+        }
+    }
+
+    private static final Pattern PATTERN = Pattern.compile("\\$\\{[a-z|A-Z]+[.a-z|A-Z]*}");
+
+    @Test
+    public void test37() throws Exception {
+        String str = "我和你${user.id}！不不不,为什么${user.studentCode}!啊啊啊啊${user.name}";
+        List<String> list = new ArrayList<>();
+        Matcher matcher = PATTERN.matcher(str);
+        while (matcher.find()){
+            list.add(matcher.group());
+        }
+        boolean sign = true;
+        for(String s : list){
+            if (sign){
+                
+            }
+        }
+    }
+
 }

@@ -2,16 +2,14 @@ package com.raiden.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.raiden.aop.annotation.CustomService;
-import com.raiden.config.Config;
+import com.raiden.config.CommonConfiguration;
 import com.raiden.handler.CustomerBlockHandler;
 import com.raiden.model.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.apm.toolkit.meter.Counter;
 import org.apache.skywalking.apm.toolkit.meter.Histogram;
 import org.apache.skywalking.apm.toolkit.meter.MeterFactory;
-import org.apache.skywalking.apm.toolkit.meter.MeterId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -28,7 +26,7 @@ import java.util.Arrays;
 public class OrderService {
 
     @Autowired
-    private Config config;
+    private CommonConfiguration config;
 
     public String getUser(String id, String name, String age, String sex){
         return "hello word";

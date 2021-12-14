@@ -10,6 +10,7 @@ import com.raiden.model.User;
 import com.raiden.service.CacheService;
 import com.raiden.service.OrderService;
 import com.raiden.task.DynamicScheduledTask;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -31,12 +32,18 @@ import java.util.List;
 @RestController
 @RequestMapping("order")
 @Validated
+@Slf4j
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
     @Autowired(required = false)
     private CacheService cacheService;
+
+    @ModelAttribute
+    public void modelAttribute(){
+        log.error("这里是 ModelAttribute 方法");
+    }
 
     @GetMapping("/getOrder/{language}")
     public Order getOrder(@RequestParam(name = "orderId")String orderId){

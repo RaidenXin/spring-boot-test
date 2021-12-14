@@ -3,6 +3,7 @@ package com.raiden.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,14 +20,13 @@ public class Order {
     private String memberId;
     private double pirce;
     private String commodityName;
+    private List<Goods> goodsList;
+
+
     public Order(String memberId,String commodityName,double pirce){
         this.memberId = memberId;
         this.commodityName = commodityName;
         this.pirce = pirce;
         this.orderId = UUID.randomUUID().toString();
-    }
-
-    public static String getId(){
-        return "1";
     }
 }

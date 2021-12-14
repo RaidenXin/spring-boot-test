@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * @Modified By:
  */
 @Configuration
-public class CacheConfig {
+public class CacheConfiguration {
 
 
     @Bean

@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @I18nConfig
 @NRpcScan(basePackage = "com.raiden.service")
-public class Config {
+public class CommonConfiguration {
 
     @ConfigValue("order.commodityName.{language}")
     private String commodityName;
