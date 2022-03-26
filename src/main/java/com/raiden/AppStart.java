@@ -1,6 +1,8 @@
 package com.raiden;
 
 import com.raiden.annotation.EnableDisableService;
+import com.raiden.redis.current.limiter.annotation.EnableRedisCurrentLimiter;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -16,6 +18,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableCaching
 @EnableDisableService
 @EnableDiscoveryClient
+@MapperScan("com.raiden.mapper")
+@EnableRedisCurrentLimiter
 public class AppStart {
 
     public static final void main(String[] args){

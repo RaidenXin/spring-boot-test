@@ -1,6 +1,7 @@
 package com.raiden.croe;
 
 import com.raiden.annotation.TestService;
+import com.raiden.factory.ProxyBeanFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -20,7 +21,7 @@ public class CustomPathScanHandle extends ClassPathBeanDefinitionScanner {
 
     @Override
     public Set<BeanDefinitionHolder> doScan(String... basePackages) {
-        //添加过滤条件，这里是只添加了@NRpcServer的注解才会被扫描到
+        //添加过滤条件，这里是只添加了@TestService的注解才会被扫描到
         addIncludeFilter(new AnnotationTypeFilter(TestService.class, false, true));
         //调用spring的扫描
         Set<BeanDefinitionHolder> beanDefinitionHolders = super.doScan(basePackages);
@@ -31,7 +32,7 @@ public class CustomPathScanHandle extends ClassPathBeanDefinitionScanner {
     protected void registerBeanDefinition(BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry) {
         GenericBeanDefinition definition = (GenericBeanDefinition) definitionHolder.getBeanDefinition();
         definition.getPropertyValues().add("interfaceClass", definition.getBeanClassName());
-//        definition.setBeanClass(ProxyBeanFactory.class);
+        definition.setBeanClass(ProxyBeanFactory.class);
         definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
         BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
     }

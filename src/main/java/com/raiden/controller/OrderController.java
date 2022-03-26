@@ -1,10 +1,14 @@
 package com.raiden.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.raiden.aop.annotation.CurrentLimiting;
+import com.raiden.callback.RedisCurrentLimitingDegradeCallbackImpl;
 import com.raiden.handler.CustomerBlockHandler;
+import com.raiden.mapper.TestTbGradeMapper;
+import com.raiden.model.Grade;
+import com.raiden.redis.current.limiter.RedisCurrentLimiter;
+import com.raiden.redis.current.limiter.annotation.CurrentLimiting;
+import com.raiden.redis.current.limiter.annotation.DegradeCallback;
 import com.raiden.service.InstanceService;
-import com.raiden.handler.InstanceStatusHandler;
 import com.raiden.model.Order;
 import com.raiden.model.User;
 import com.raiden.service.CacheService;
@@ -16,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @创建人:Raiden
@@ -50,7 +56,6 @@ public class OrderController {
         return orderService.getOrder(orderId);
     }
 
-    @CurrentLimiting
     @GetMapping("/getUser/{language}")
     public String getUser(@RequestParam(name = "id")String id,
                           @RequestParam(name = "name")String name,
@@ -101,6 +106,16 @@ public class OrderController {
 
 
     @Autowired
+    private TestTbGradeMapper mapper;
+
+    @GetMapping("/getGrade")
+    @CurrentLimiting(value = "getGrade",degradeCallback = @DegradeCallback(callback = "redisCurrentLimitingDegradeCallbackImpl", callbackClass = RedisCurrentLimitingDegradeCallbackImpl.class))
+    public List<Grade> getGrade(String username){
+        return mapper.query(username);
+    }
+
+
+    @Autowired
     private InstanceService instanceService;
 
     @GetMapping("/disable")
@@ -113,5 +128,14 @@ public class OrderController {
     public String enable(){
         boolean enable = instanceService.enable();
         return "seccess";
+    }
+
+    @Autowired
+    private HttpServletRequest request;
+
+    @GetMapping("/request")
+    public String request(){
+        String method = request.getMethod();
+        return method;
     }
 }
