@@ -1,7 +1,6 @@
 package com.raiden.listener;
 
 import com.raiden.concurrent.CustomThreadPoolExecutor;
-import com.raiden.concurrent.listener.DefaultThreadPoolListener;
 import com.raiden.concurrent.listener.ThreadPoolListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -72,7 +71,7 @@ public class CustomApplicationListener implements ApplicationListener<ContextRef
                 Object o = consumeExecutor.get(consumeMessageService);
                 if (o instanceof ThreadPoolExecutor){
                     ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) o;
-                    DefaultThreadPoolListener listener = new DefaultThreadPoolListener(listeners);
+                    ThreadPoolListener listener = ThreadPoolListener.getDefaultInstance(listeners);
                     consumeExecutor.set(consumeMessageService, new CustomThreadPoolExecutor(threadPoolExecutor, listener, TimeUnit.MILLISECONDS));
                 }
             } catch (Exception e) {

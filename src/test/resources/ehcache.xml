@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+    <!-- 默认配置 -->
+    <defaultCache maxElementsInMemory="10000"
+                  eternal="false"
+                  timeToLiveSeconds="600"
+                  memoryStoreEvictionPolicy="LRU"
+                  overflowToDisk="false"
+                  diskPersistent="false"/>
+
+    <!--测试用-->
+    <cache name="cacheTest" maxElementsInMemory="10000" timeToLiveSeconds="300" />
+
+</ehcache>

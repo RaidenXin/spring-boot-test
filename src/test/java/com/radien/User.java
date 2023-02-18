@@ -47,4 +47,8 @@ public class User<T>{
         return Objects.hash(name, t);
     }
 
+    public String getName(String value){
+        return name;
+    }
+
 }

@@ -1,25 +1,39 @@
 package com.radien;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.common.http.HttpUtils;
 import com.raiden.model.URLInfo;
 import com.raiden.utils.*;
+import javafx.util.Pair;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisSentinelPool;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -1032,18 +1046,1057 @@ public class AppTest {
 
     @Test
     public void test37() throws Exception {
-        String str = "我和你${user.id}！不不不,为什么${user.studentCode}!啊啊啊啊${user.name}";
-        List<String> list = new ArrayList<>();
-        Matcher matcher = PATTERN.matcher(str);
-        while (matcher.find()){
-            list.add(matcher.group());
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.execute(() -> {
+            FileChannel rw = null;
+            try {
+                rw = new RandomAccessFile(new File("text.txt"), "rw").getChannel();
+                MappedByteBuffer buffer = rw.map(FileChannel.MapMode.READ_WRITE, 0, 10000);
+                countDownLatch.await();
+                for (int i = 0;i< 1000;i++){
+                    buffer.putInt(1);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        executorService.execute(() -> {
+            FileChannel rw = null;
+            try {
+                rw = new RandomAccessFile(new File("text.txt"), "rw").getChannel();
+                MappedByteBuffer buffer = rw.map(FileChannel.MapMode.READ_WRITE, 0, 10000);
+                countDownLatch.await();
+                for (int i = 0;i< 1000;i++){
+                    buffer.putInt(2);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        countDownLatch.countDown();
+        WaitingUtil.waiting(10000);
+        System.err.println("----------------------------------------------------------");
+        try {
+            FileChannel rw = new RandomAccessFile(new File("text.txt"), "rw").getChannel();
+            MappedByteBuffer buffer = rw.map(FileChannel.MapMode.READ_WRITE, 0, 10000);
+            int temp = 0;
+            for (int i = 0;i< 1000;i++){
+                int anInt = buffer.getInt();
+                if (i == 0){
+                    temp = anInt;
+                }
+                if (anInt == temp){
+                    System.out.println("--" + anInt + "   count：" + i);
+                }else {
+                    throw new IllegalArgumentException();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void test38(){
+        int[] height = {1,8,6,2,5,4,8,3,7};
+        System.err.println(maxArea(height));
+    }
+
+    public int maxArea(int[] height) {
+        int max = 0;
+        int left = 0,right = height.length - 1,lenght = right;
+        while (left < right){
+            boolean sign = height[left] < height[right];
+            int volume = (sign ? height[left++] : height[right--]) * lenght--;
+            if (volume > max){
+                max = volume;
+            }
+        }
+        return max;
+    }
+
+
+    @Test
+    public void test39(){
+        int[] nums = {0,0,0,0};
+        System.err.println(threeSum(nums));
+    }
+
+    public List<List<Integer>> threeSum(int[] nums) {
+        if (nums.length < 3){
+            return new ArrayList<>();
+        }
+        Arrays.sort(nums);
+        if (nums[0] > 0){
+            return new ArrayList<>();
+        }
+        int length = nums.length;
+        List<List<Integer>> result = new ArrayList<>();
+        for (int i = 0; i < length; i++){
+            //拍完序后 如果 第i个大于0 那么他后面的必定不会小于 0 那么他们的和也会大于0
+            if (nums[i] > 0){
+                break;
+            }
+            //这里是跳过重复的
+            if (i > 0 && nums[i] == nums[i - 1]){
+                continue;
+            }
+            //获取第一个数
+            int one = nums[i];
+            //如果要让 三个数等于 0 就是必须使得后面两个数相加的和等于负的第一个数
+            int left = i + 1,right = length - 1;
+            while (left < right){
+                // 需要和上一次枚举的数不相同
+                if (left > i + 1 && nums[left] == nums[left - 1]) {
+                    left++;
+                    continue;
+                }else if (right < length - 1 && nums[right] == nums[right + 1]){
+                    right--;
+                    continue;
+                }
+                if (nums[left] + nums[right] == -one){
+                    List<Integer> list = new ArrayList<>();
+                    list.add(one);
+                    list.add(nums[left]);
+                    list.add(nums[right]);
+                    result.add(list);
+                }
+                if (nums[left] + nums[right] > -one){
+                    right--;
+                }else {
+                    left++;
+                }
+            }
+        }
+        return result;
+    }
+
+
+    @Test
+    public void test40(){
+        String digits = "23";
+        System.err.println(letterCombinations(digits));
+    }
+
+    private static final Map<Character, List<String>> phoneMap = new HashMap<Character, List<String>>() {{
+        put('2', Arrays.asList(new String[]{"a", "b","c"}));
+        put('3', Arrays.asList(new String[]{"d", "e","f"}));
+        put('4', Arrays.asList(new String[]{"g","h","i"}));
+        put('5', Arrays.asList(new String[]{"j","k","l"}));
+        put('6', Arrays.asList(new String[]{"m","n","o"}));
+        put('7', Arrays.asList(new String[]{"p","q","r","s"}));
+        put('8', Arrays.asList(new String[]{"t","u","v"}));
+        put('9', Arrays.asList(new String[]{"w","x","y","z"}));
+    }};
+
+    public List<String> letterCombinations(String digits) {
+        if (digits.isEmpty()){
+            return new ArrayList<>();
+        }
+       if (digits.length() == 1){
+           return phoneMap.get(digits.charAt(0));
+       }else {
+           List<String> temp = null;
+           for (int i = digits.length() - 1; i > -1; i--){
+               if (temp == null){
+                   temp = phoneMap.get(digits.charAt(i));
+               }else {
+                   List<String> strings = phoneMap.get(digits.charAt(i));
+                   List<String> finalTemp = temp;
+                   temp = strings.stream().flatMap(s -> finalTemp.stream().map(l -> s + l)).collect(Collectors.toList());
+               }
+           }
+           return temp;
+       }
+    }
+
+
+    @Test
+    public void test41(){
+        ListNode node = new ListNode(1, new ListNode(2));
+        ListNode node1 = removeNthFromEnd(node, 2);
+        System.err.println();
+    }
+
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        if (head == null){
+            return null;
+        }
+        Stack<ListNode> stack = new Stack<>();
+        ListNode next = head.next;
+        if (next == null){
+            return null;
+        }
+        stack.push(head);
+        while (next != null){
+            stack.push(next);
+            next = next.next;
+        }
+        ListNode node = null;
+        for (int i = 0; i < n; i++) {
+            node = stack.pop();
+        }
+        if (stack.isEmpty()){
+            return node.next;
+        }else {
+            ListNode pop = stack.pop();
+            if (node != null){
+                pop.next = node.next;
+            }
+            node.next = null;
+            return head;
+        }
+    }
+
+    @Test
+    public void test42(){
+        String s = "){";
+        System.err.println(isValid(s));
+    }
+
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        char[] chars = s.toCharArray();
+        if (chars.length < 2){
+            return false;
         }
         boolean sign = true;
-        for(String s : list){
-            if (sign){
-                
+        Character peek;
+        for (char c : chars){
+            switch (c){
+                case '{':
+                    stack.push(c);
+                    break;
+                case '[':
+                    stack.push(c);
+                    break;
+                case '(':
+                    stack.push(c);
+                    break;
+                case '}':
+                    if (stack.isEmpty()){
+                        return false;
+                    }
+                    peek = stack.pop();
+                    sign &= peek.equals('{');
+                    break;
+                case ']':
+                    if (stack.isEmpty()){
+                        return false;
+                    }
+                    peek = stack.pop();
+                    sign &= peek.equals('[');
+                    break;
+                case ')':
+                    if (stack.isEmpty()){
+                        return false;
+                    }
+                    peek = stack.pop();
+                    sign &= peek.equals('(');
+                    break;
+            }
+        }
+        return sign & stack.isEmpty();
+    }
+
+    @Test
+    public void test43(){
+        mergeTwoLists(null, null);
+    }
+
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode left = list1;
+        ListNode right = list2;
+        List<ListNode> listNodes = new ArrayList<>();
+        while (true){
+            if (left == null){
+                for (;right != null;){
+                    listNodes.add(right);
+                    right = right.next;
+                }
+                break;
+            }
+            if (right == null){
+                for (;left != null;){
+                    listNodes.add(left);
+                    left = left.next;
+                }
+                break;
+            }
+            if (right != null && left != null){
+                int val1 = left.val;
+                int val2 = right.val;
+                if (val1 > val2){
+                    listNodes.add(right);
+                    right = right.next;
+                }else {
+                    listNodes.add(left);
+                    left = left.next;
+                }
+            }
+        }
+        if (listNodes.isEmpty()){
+            return null;
+        }
+        ListNode first = listNodes.get(0);
+        ListNode next = first;
+        for (int i = 1; i < listNodes.size(); i++) {
+            if (next != null){
+                next.next = listNodes.get(i);
+                next = next.next;
+            }
+        }
+        return first;
+    }
+
+
+    @Test
+    public void test44(){
+        String[] strings = {"(((())))","((()()))","((())())","((()))()","(()(()))","(()()())","(()())()",
+                "(())(())","(())()()","()((()))","()(()())","()(())()","()()(())","()()()()"};
+        List<String> list = Arrays.asList(strings);
+        System.err.println(list.equals(generateParenthesis(4)));
+        System.err.println(generateParenthesis(4));
+    }
+
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        // 特判
+        if (n == 0) {
+            return res;
+        }
+
+        // 执行深度优先遍历，搜索可能的结果
+        dfs("", n, n, res);
+        return res;
+    }
+
+    /**
+     * @param curStr 当前递归得到的结果
+     * @param left   左括号还有几个可以使用
+     * @param right  右括号还有几个可以使用
+     * @param res    结果集
+     */
+    private void dfs(String curStr, int left, int right, List<String> res) {
+        // 因为每一次尝试，都使用新的字符串变量，所以无需回溯
+        // 在递归终止的时候，直接把它添加到结果集即可，注意与「力扣」第 46 题、第 39 题区分
+        if (left == 0 && right == 0) {
+            res.add(curStr);
+            return;
+        }
+
+        // 剪枝（如图，左括号可以使用的个数严格大于右括号可以使用的个数，才剪枝，注意这个细节）
+        if (left > right) {
+            return;
+        }
+
+        if (left > 0) {
+            dfs(curStr + "(", left - 1, right, res);
+        }
+
+        if (right > 0) {
+            dfs(curStr + ")", left, right - 1, res);
+        }
+    }
+
+    @Test
+    public void test45(){
+        ListNode[] lists = {
+                new ListNode(0),
+                new ListNode(1),
+                new ListNode(2),
+                new ListNode(3),
+        };
+        ListNode node = mergeKLists(lists);
+        System.err.println(lists);
+    }
+
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists.length == 0){
+            return null;
+        }
+        for (int i = 1; i < lists.length; i = i*2){
+            for (int j = 0; j + i < lists.length; j = j + i*2){
+                System.err.println("i:" + i + " j:" + j);
+                lists[j] = merge2Lists(lists[j], lists[j+i]);
+            }
+        }
+        return lists[0];
+    }
+
+    private ListNode merge2Lists(ListNode left,ListNode right){
+        if (left == null){
+            return right;
+        }
+        if (right == null){
+            return left;
+        }
+        ListNode first,next;
+        if (left.val < right.val){
+            first = left;
+            next = first;
+            left = first.next;
+        }else {
+            first = right;
+            next = first;
+            right = first.next;
+        }
+        while (left != null && right != null){
+            if (left.val < right.val){
+                next.next = left;
+                left = left.next;
+            }else {
+                next.next = right;
+                right = right.next;
+            }
+            next = next.next;
+        }
+        if (left == null){
+            next.next = right;
+        }else {
+            next.next = left;
+        }
+        return first;
+    }
+
+
+    @Test
+    public void test46(){
+        PrefixHeader header = new PrefixHeader();
+        header.addStr("abc");
+        header.addStr("ab");
+        header.addStr("abcd");
+        header.addStr("abcd");
+        header.addStr("abcd");
+//        header.addStr("abcd");
+        System.err.println(header.countStr("abcd"));
+    }
+
+    @Test
+    public void test47(){
+        TreeNode root = new TreeNode(5);
+        TreeNode node3 = new TreeNode(3);
+        root.left = node3;
+        TreeNode node6 = new TreeNode(6);
+        root.right = node6;
+        TreeNode node4 = new TreeNode(4);
+        node3.right = node4;
+        TreeNode node2 = new TreeNode(2);
+        node3.left = node2;
+        TreeNode node1 = new TreeNode(1);
+        node2.left = node1;
+        System.err.println(kthLargest(root, 3));
+    }
+
+    private int index = 0;
+    private int res = 0;
+
+    public int kthLargest(TreeNode root, int k) {
+        traverseTree(root, k);
+        return res;
+    }
+
+    private void traverseTree(TreeNode node, int k){
+        if (node == null){
+            return;
+        }
+        traverseTree(node.right, k);
+        index++;
+        if(index == k){
+            res = node.val;
+            return;
+        }
+        traverseTree(node.left, k);
+    }
+
+
+
+    @Test
+    public void test48(){
+        ListNode l1 = new ListNode(1);
+        l1.next = new ListNode(8);
+        ListNode l2 = new ListNode(0);
+        System.err.println(addTwoNumbers(l1, l2));
+    }
+
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode left = l1,right = l2;
+        ListNode result = null,node = null;
+        int temp = 0;
+        while (left != null || right != null){
+            int i = (left == null ? 0 : left.val) + (right == null ? 0 : right.val) + temp;
+            if (i >= 10){
+                i = i - 10;
+                temp = 1;
+            }else {
+                temp = 0;
+            }
+            if (node == null){
+                node = new ListNode(i);
+                result = node;
+            }else {
+                node.next = new ListNode(i);
+                node = node.next;
+            }
+            if (left != null){
+                left = left.next;
+            }
+            if (right != null){
+                right = right.next;
+            }
+        }
+        if (temp > 0){
+            node.next = new ListNode(temp);
+        }
+        return result;
+    }
+
+    @Test
+    public void test49(){
+        int[] nums = {1,1,2,3,3,4,4,8,8};
+        System.err.println(singleNonDuplicate(nums));
+    }
+
+    /**
+     * LeetCode 540题
+     * @param nums
+     * @return
+     */
+    public int singleNonDuplicate(int[] nums) {
+        int i = 0;
+        for (; i < nums.length - 1; i += 2) {
+            if ((nums[i] ^ nums[i + 1]) != 0){
+                return nums[i];
+            }
+        }
+        return nums[i];
+    }
+
+    @Test
+    public void test50(){
+        int[] prices = {3,2,6,5,0,3};
+        System.err.println(maxProfit121(prices));
+    }
+
+    /**
+     * leetcode 第121 题
+     * @param prices
+     * @return
+     */
+    public int maxProfit121(int[] prices) {
+        if (prices.length < 2){
+            return 0;
+        }
+        int result = 0;
+        int min = 10001,max = 0;
+        int length = prices.length;
+        for (int i = 0; i < length; i++){
+            int temp;
+            int p = prices[i];
+            //这里是获取最小的点 如果最小的点是最后一个也就没有意义了
+            if (p < min && i < length - 1){
+                min = p;
+                //因为 只有买了之后才能卖,后面的买的不能卖在前面的最高点,
+                // 所以每次买的时候要将最高价还原成0
+                max = 0;
+            }else if (p > max){
+                //获取最大的点
+                max = p;
+            }
+            //求从最低到最高能获利多少钱
+            temp = max - min;
+            //如果比前面的最高获利还小 因为只能买卖一次,那这对最低和最高就没有意义
+            if (temp > result){
+                result = temp;
+            }
+        }
+        return result;
+    }
+
+    @Test
+    public void test51(){
+        int[] prices = {3,2,6,5,0,3};
+        System.err.println(maxProfit122_2(prices));
+    }
+
+    /**
+     * leetcode 第122题 使用动态规划
+     * @param prices
+     * @return
+     */
+    public int maxProfit122_1(int[] prices) {
+        //创建二维记录表
+        //一天只有两种状态 买 和 不买 所以第一维是第几天 第二维是 买或者不买的状态 假设下标 0代表不买 1代表买 值为当天的收益
+        int length = prices.length;
+        int[][] status = new int[length][2];
+        //第一天不买 收益为0
+        status[0][0] = 0;
+        //第一天买,切不当天卖的收益为 负的当天价格
+        status[0][1] = -prices[0];
+        //动态规划 状态转移方程
+        for (int i = 1; i < length; i++) {
+            // status[i][0] 如果当天不买,则当天最大的收益为 之前不买的收益(之前没有买股票,所以当天产生收益) 和 （之前买了的收益 + 今天本日价格的收益[之前买了现在才有收益]） 取一个最大值即为当前不买的最大收益
+            int temp1 = status[i - 1][0],temp2 = status[i - 1][1] + prices[i];
+            status[i][0] = temp1 > temp2 ? temp1 : temp2;
+            // status[i][1] 如果当天买,则当天最大的收益为 之前不买的收益 + 因为今天买了当前价格股票产生的负收益 和 之前买了的收益(因为只能持有一只股票,所以之前买了今天不能再买,所以没有负收益) 取一个最大值 即为当前买的最大收益
+            temp1 = status[i - 1][0] - prices[i];
+            temp2 = status[i - 1][1];
+            status[i][1] = temp1 > temp2 ? temp1 : temp2;
+        }
+        //最后一天肯定是不能买的 因为无法卖出 所以 去不买状态的 收益即可
+        return status[length - 1][0];
+    }
+
+    /**
+     * leetcode 第122题 使用贪心算法
+     * @param prices
+     * @return
+     */
+    public int maxProfit122_2(int[] prices) {
+        //贪心算法的基本思路就是 把一段时间的收益 转换为 昨天买今天卖的单天的收益累加和
+        //贪心算法 取局部最优解 即取所有的单天收益为正数的所有收益累加之和为最大收益
+        int price = 0;
+        for (int i = 1; i < prices.length; i++) {
+            //昨天买今天卖 单天收益 为 今天的价格 - 昨天的价格
+            int temp = prices[i] - prices[i - 1];
+            //如果收益为正 累加
+            if (temp > 0){
+                price += temp;
+            }
+        }
+        return price;
+    }
+
+    @Test
+    public void test52() throws IOException {
+        File file = new File("text.txt");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 100; i++) {
+            builder.append(i);
+            builder.append("\r\n");
+        }
+        byte[] bytes = builder.toString().getBytes("utf-8");
+        MappedByteBuffer map = FileChannel.open(file.toPath(), StandardOpenOption.READ,StandardOpenOption.WRITE).map(FileChannel.MapMode.READ_WRITE, 0, bytes.length);
+        map.put(bytes);
+        map.force();
+        byte[] read = new byte[bytes.length];
+        map.flip();
+        map.mark();
+        map.get(read, 0, bytes.length);
+        System.err.println(new String(read));
+        System.err.println("开始切换");
+        map.reset();
+        map.get(read, 0, bytes.length);
+        System.err.println(new String(read));
+    }
+
+
+    @Test
+    public void test53() throws IOException {
+        String json = "{\n" +
+                "\t\"Test1\": \"1\",\n" +
+                "\t\"Test2\": \"2\"\n" +
+                "}";
+        UserTest userTest = JSON.parseObject(json, UserTest.class);
+        System.err.println(userTest);
+    }
+
+    @Test
+    public void test54() throws IOException {
+        int[] keys = new int[5];
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000000000; i++) {
+            int hash = hash1(i, keys);
+            hash = hash + 1;
+        }
+        long end = System.currentTimeMillis() - start;
+        System.err.println("第一版本耗时：" + end + "ms");
+
+        start = System.currentTimeMillis();
+        for (int i = 0; i < 1000000000; i++) {
+            int hash = hash2(i, keys);
+            hash = hash + 1;
+        }
+        end = System.currentTimeMillis() - start;
+        System.err.println("第二版本耗时：" + end + "ms");
+    }
+
+    private int hash1(int i,int[] keys){
+        int hash = i % keys.length;
+        if (hash > 3) {
+            hash += keys.length;
+        }
+        return hash;
+    }
+
+    private int hash2(int i,int[] keys){
+        return (i % keys.length + keys.length) % keys.length;
+    }
+
+    private static final Pattern P = Pattern.compile("([0-9]*)\\.([0-9]*)\\.([0-9]*)\\.([0-9]*)");
+
+    @Test
+    public void test55() throws IOException {
+        byte[] bytes = Files.readAllBytes(new File("C:\\Work\\work\\spring-boot-test\\src\\test\\resources\\test.json").toPath());
+        String json = new String(bytes, "utf-8");
+    }
+
+    @Test
+    public void test56() throws IOException {
+        Semaphore semp = new Semaphore(0);
+        new Thread(() ->{
+            for (;;){
+                try {
+                    semp.acquire();
+                    System.err.println("申请到了信号量！");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(() ->{
+            for (;;){
+                semp.release();
+            }
+        }).start();
+        try {
+            TimeUnit.SECONDS.sleep(30);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void test57() throws UnsupportedEncodingException {
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        Set<String> sentinels = new HashSet<>(Arrays.asList(
+                "哨兵IP1:port1",
+                "哨兵IP2:port2",
+                "哨兵IP3:port3"
+        ));
+        JedisSentinelPool pool = new JedisSentinelPool("masterName", sentinels, jedisPoolConfig, "password");
+        Jedis jedis = pool.getResource();
+        System.out.println(jedis.getClient().getHost());
+        System.out.println(jedis.getClient().getPort());
+    }
+
+
+    private static final Charset ASCII = Charset.forName("ASCII");
+    /**
+     * # 0 =  "String Encoding"
+     * # 1 =  "List Encoding"
+     * # 2 =  "Set Encoding"
+     * # 3 =  "Sorted Set Encoding"
+     * # 4 =  "Hash Encoding"
+     * # 9 =  "Zipmap Encoding"
+     * # 10 = "Ziplist Encoding"
+     * # 11 = "Intset Encoding"
+     * # 12 = "Sorted Set in Ziplist Encoding"
+     * # 13 = "Hashmap in Ziplist Encoding"
+     * @throws IOException
+     */
+    @Test
+    public void test58() throws IOException {
+        File rdb = new File("D:\\redis-cluster\\home\\redis-cluster\\8013\\data\\dump.rdb");
+        FileChannel open = FileChannel.open(rdb.toPath(), StandardOpenOption.READ);
+        long size = open.size();
+        System.err.println(size);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        int read = open.read(byteBuffer);
+        System.err.println(read);
+        if(read > 0){
+            byteBuffer.flip();
+            byte[] data = new byte[1024];
+            byteBuffer.get(data);
+            int index = 0;
+            for (;byte2Int(data[index]) != 251;index++);
+            index += 3;
+            byte b = data[index];
+            int i = byte2Int(b);
+            if (i > -1 && i < 14){
+                //这里是类型
+                switch (i){
+                    case 0: {
+                        System.err.println("这是一个String!");
+                        int keySize = byte2Int(data[index += 1]);
+                        System.err.println("Key长度是：" + keySize);
+                        byte[] bytes = new byte[keySize];
+                        byteBuffer.get(bytes, 0, keySize);
+                        System.err.println("Key:" + new String(bytes, ASCII));
+                    }
+                        break;
+                    case 1:
+                        System.err.println("这是一个List!");
+                        break;
+                    case 2:
+                        System.err.println("这是一个Set!");
+                        break;
+                    case 3:
+                        System.err.println("这是一个Sorted Set!");
+                        break;
+                    case 4:
+                        System.err.println("这是一个Hash!");
+                        break;
+                    case 9:
+                        System.err.println("这是一个Zipmap!");
+                        break;
+                    case 10:
+                        System.err.println("这是一个Ziplist!");
+                        break;
+                    case 11:
+                        System.err.println("这是一个Intset!");
+                        break;
+                    case 12: {
+                        System.err.println("这是一个Sorted Set in Ziplist!");
+                        int keySize = byte2Int(data[index += 1]);
+                        System.err.println("Key长度是：" + keySize);
+                        byte[] bytes = new byte[keySize];
+                        System.arraycopy(data, index+=1, bytes, 0, keySize);
+                        index+=keySize;
+                        System.err.println("Key:" + new String(bytes, ASCII));
+                        int valueSize = byte2Int(data[index += 1]);
+                        bytes = new byte[valueSize];
+                        System.arraycopy(data, index+=1, bytes, 0, valueSize);
+                        index+=keySize;
+                        System.err.println("Value:" + new String(bytes, ASCII));
+                    }
+                        break;
+                    case 13:
+                        System.err.println("这是一个Hashmap in Ziplist!");
+                        break;
+                }
+            }else if (i == 252){
+                //这里是超时时间
             }
         }
     }
 
+    public static int byte2Int(byte b){
+        return (int)(b & 0xff);
+    }
+
+
+    @Test
+    public void test59() throws IOException {
+        byte[] bytes = new byte[2704];
+        File rdb = new File("D:\\redis-cluster\\home\\redis-cluster\\8013\\data\\dump.rdb");
+        FileChannel open = FileChannel.open(rdb.toPath(), StandardOpenOption.READ);
+        long size = open.size();
+        long sum = size / 1024 + 1;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        //判断是否是最后一个
+        for (long i = 0; i < sum; i ++){
+            if (i == sum - 1){
+                int length = (int) (size & (1024 - 1));
+                if (length > 0){
+                    open.read(byteBuffer);
+                    byteBuffer.flip();
+                    byteBuffer.get(bytes, (int)(i << 10), length);
+                    byteBuffer.flip();
+                }else {
+                    open.read(byteBuffer);
+                    byteBuffer.flip();
+                    byteBuffer.get(bytes, (int)(i << 10), 1024);
+                    byteBuffer.flip();
+                }
+            }else {
+                open.read(byteBuffer);
+                byteBuffer.flip();
+                byteBuffer.get(bytes, (int)(i << 10), 1024);
+                byteBuffer.flip();
+            }
+        }
+        System.err.println(new String(bytes, "utf-8"));
+    }
+
+
+    @Test
+    public void test60() throws IOException {
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>(20);
+        for (int i = 99; i > -1; i--) {
+            int size = minHeap.size();
+            if (size == 10){
+                Integer peek = minHeap.peek();
+                if (peek.intValue() < i){
+                    minHeap.poll();
+                    minHeap.add(i);
+                }
+            }else {
+                minHeap.add(i);
+            }
+        }
+        Integer poll;
+        do {
+            poll = minHeap.poll();
+            if (poll != null){
+                System.err.println(poll);
+            }
+        }while (poll != null);
+    }
+
+
+    @Test
+    public void test61() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        User<String> user = new User<>();
+        long start = System.currentTimeMillis();
+        String name = "!1111";
+        for (int i = 0; i < 1000_0000; i++) {
+            user.setName(name);
+            name = user.getName();
+        }
+        System.err.println("方法调用消耗时间:" + (System.currentTimeMillis() - start));
+        Method setName = user.getClass().getDeclaredMethod("setName", String.class);
+        start = System.currentTimeMillis();
+        for (int i = 0; i < 1000_0000; i++) {
+            setName.invoke(user, name);
+            name = user.getName();
+        }
+        System.err.println("反射调用消耗时间:" + (System.currentTimeMillis() - start));
+    }
+
+    @Test
+    public void test62()  {
+    }
+
+    public List<Integer> preorder(Node root) {
+        if(root == null){
+            return new ArrayList<>();
+        }
+        List<Integer> result = new ArrayList<>();
+        result.add(root.val);
+        if(root.children == null){
+            return result;
+        }
+        List<Node> children = root.children;
+        children.remove(1);
+        if(children != null){
+            Stack<ArrayBlockingQueue<Node>> stack = new Stack<>();
+            for(Node node : children){
+                if(node != null){
+                    do{
+                        result.add(node.val);
+                        List<Node> list = node.children;
+                        ArrayBlockingQueue<Node> queue;
+                        if(list != null){
+                            queue = new ArrayBlockingQueue(list.size());
+                            for(Node n : list){
+                                if(n != null){
+                                    queue.add(n);
+                                }
+                            }
+                            stack.push(queue);
+                            node = queue.poll();
+                        }else{
+                            if(stack.isEmpty()){
+                                break;
+                            }
+                            queue = stack.pop();
+                            if(queue.isEmpty()){
+                                continue;
+                            }
+                            node = queue.poll();
+                        }
+                    }while(true);
+                }
+            }
+        }
+        return result;
+    }
+
+    class Node {
+        public int val;
+        public List<Node> children;
+
+        public Node() {}
+
+        public Node(int _val) {
+            val = _val;
+        }
+
+        public Node(int _val, List<Node> _children) {
+            val = _val;
+            children = _children;
+        }
+    };
+
+    @Test
+    public void test63()  {
+        int[] nums = {2,0,2,1,1,0};
+        System.out.println(nums);
+        sort(nums, 0, nums.length - 1);
+        System.out.println(nums);
+    }
+
+    public void sort(int[] nums,int start,int end){
+        if(start >= end){
+            return;
+        }
+        if(start + 1 == end){
+            if(nums[start] > nums[end]){
+                int temp = nums[start];
+                nums[start] = nums[end];
+                nums[end] = temp;
+            }
+            return;
+        }
+        int left = start,right = end;
+        while(left < right){
+            for(;right > left;right--){
+                if(nums[right] < nums[left]){
+                    int temp = nums[right];
+                    nums[right] = nums[left];
+                    nums[left] = temp;
+                    break;
+                }
+            }
+            for(;left < right;left++){
+                if(nums[right] < nums[left]){
+                    int temp = nums[right];
+                    nums[right] = nums[left];
+                    nums[left] = temp;
+                    break;
+                }
+            }
+        }
+        sort(nums, start, left - 1);
+        sort(nums, left + 1, end);
+    }
+
+    private static final Pattern PATTERN2 = Pattern.compile(".*拆分成功([0-9]+)个订单$");
+
+    @Test
+    public void test64()  {
+        String str = "拆分成功2个订单拆分成功1个订单";
+        Matcher matcher = PATTERN2.matcher(str);
+        int successQty = -1;
+        if (matcher.find()){
+            successQty = Integer.parseInt(matcher.group(1));
+        }
+        System.out.println(successQty);
+    }
+
+
+    @Test
+    public void test65()  {
+        String order = "cba", s = "abcd";
+        System.err.println(customSortString(order, s));
+    }
+
+    public String customSortString(String order, String s){
+        List<Character> characterList = new ArrayList<>(s.length());
+        for (char c : s.toCharArray()) {
+            characterList.add(c);
+        }
+        Comparator<Character> comparator = (a, b) -> order.indexOf(a) - order.indexOf(b);
+        characterList.sort(comparator);
+        StringBuilder builder = new StringBuilder(s.length());
+        for (Character c : characterList) {
+            builder.append(c);
+        }
+        return builder.toString();
+    }
 }
+

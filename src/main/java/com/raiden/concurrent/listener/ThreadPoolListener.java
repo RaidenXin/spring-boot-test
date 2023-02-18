@@ -1,5 +1,6 @@
 package com.raiden.concurrent.listener;
 
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -10,4 +11,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public interface ThreadPoolListener {
     void callback(ThreadPoolExecutor executor);
+
+    public static ThreadPoolListener getDefaultInstance(List<ThreadPoolListener> listeners){
+        return new DefaultThreadPoolListener(listeners);
+    }
 }

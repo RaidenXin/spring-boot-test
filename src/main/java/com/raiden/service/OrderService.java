@@ -1,10 +1,12 @@
 package com.raiden.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.raiden.aop.annotation.CustomService;
+import com.raiden.callback.RedisCurrentLimitingDegradeCallbackImpl;
 import com.raiden.config.CommonConfiguration;
 import com.raiden.handler.CustomerBlockHandler;
 import com.raiden.model.Order;
+import com.raiden.redis.current.limiter.annotation.CurrentLimiting;
+import com.raiden.redis.current.limiter.annotation.DegradeCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.apm.toolkit.meter.Counter;
 import org.apache.skywalking.apm.toolkit.meter.Histogram;
@@ -22,17 +24,17 @@ import java.util.Arrays;
  */
 @Service
 @Slf4j
-@CustomService
 public class OrderService {
 
     @Autowired
-    private CommonConfiguration config;
+    private TestService testService;
 
     public String getUser(String id, String name, String age, String sex){
         return "hello word";
     }
 
     public double testMeter(String meterName){
+        log.info(testService.getClass().getName());
         try {
             Thread.sleep(Integer.parseInt(meterName));
         } catch (InterruptedException e) {
@@ -43,6 +45,8 @@ public class OrderService {
         counter.increment(1d);
         return counter.get();
     }
+
+    @CurrentLimiting(value = "getGrade",degradeCallback = @DegradeCallback(callback = "redisCurrentLimitingDegradeCallbackImpl", callbackClass = RedisCurrentLimitingDegradeCallbackImpl.class))
     @SentinelResource(value = "testMeter2", fallbackClass = CustomerBlockHandler.class, fallback = "blocHandler")
     public double testMeter2(String meterName){
         log.error(meterName);

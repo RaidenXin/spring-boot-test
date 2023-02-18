@@ -9,7 +9,7 @@ spring:
       max-idle: 20
       max-wait: 3000
       min-idle: 10
-    port: 6379
+    port: 8010
     timeout: 2000
   cloud:
     nacos:
@@ -25,7 +25,7 @@ spring:
     #配置sentinel客户端，注册该项目进控制台里
     sentinel:
       eager: true
-      transport:  
+      transport:
         #配置Sentin dashboard地址
         dashboard: localhost:8080
         # 默认8719端口，假如被占用了会自动从8719端口+1进行扫描，直到找到未被占用的 端口

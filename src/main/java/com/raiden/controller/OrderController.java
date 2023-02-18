@@ -17,9 +17,12 @@ import com.raiden.task.DynamicScheduledTask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
@@ -90,12 +93,13 @@ public class OrderController {
 
     @GetMapping("/testMeter")
     public double testMeter(String meterName) {
+        Filter filter;
         return orderService.testMeter(meterName);
     }
 
     @GetMapping("/testMeter2")
     public double testMeter2(String meterName){
-        return orderService.testMeter(meterName);
+        return orderService.testMeter2(meterName);
     }
 
     @GetMapping("/testSentinel")
@@ -137,5 +141,13 @@ public class OrderController {
     public String request(){
         String method = request.getMethod();
         return method;
+    }
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @GetMapping("/testRedisTemplate")
+    public String testRedisTemplate(@RequestParam("key") String key){
+        return redisTemplate.opsForValue().get(key);
     }
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @Date:Created in 18:00 2021/2/15
  * @Modified By:
  */
-public class DefaultThreadPoolListener implements ThreadPoolListener{
+ class DefaultThreadPoolListener implements ThreadPoolListener{
 
     private List<ThreadPoolListener> listeners;
 

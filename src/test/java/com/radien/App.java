@@ -2,6 +2,8 @@ package com.radien;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -34,7 +36,7 @@ public class App {
             User<Permissions> user = JSON.parseObject(str, genericSuperclass);
             System.err.println(user);
         }
-    }
+   }
 
     private static <T> User<T> parseResultV2(String json, Type clazz) {
         return JSON.parseObject(json, new TypeReference<User<T>>(clazz) {

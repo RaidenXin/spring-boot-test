@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Aspect
 @Component
-public class ConfigAspect {
+public class ConfigAspect extends AbstractDynamicDataSourceAspect{
 
     private final Map<String, String> cach;
     private static final String IS = "is";
