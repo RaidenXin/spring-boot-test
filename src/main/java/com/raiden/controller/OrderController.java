@@ -1,6 +1,7 @@
 package com.raiden.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.raiden.aop.annotation.SignatureRequired;
 import com.raiden.callback.RedisCurrentLimitingDegradeCallbackImpl;
 import com.raiden.handler.CustomerBlockHandler;
 import com.raiden.mapper.TestTbGradeMapper;
@@ -137,17 +138,10 @@ public class OrderController {
     @Autowired
     private HttpServletRequest request;
 
-    @GetMapping("/request")
-    public String request(){
+    @PostMapping("/request")
+    @SignatureRequired
+    public String request(@RequestBody Object o){
         String method = request.getMethod();
         return method;
-    }
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
-    @GetMapping("/testRedisTemplate")
-    public String testRedisTemplate(@RequestParam("key") String key){
-        return redisTemplate.opsForValue().get(key);
     }
 }

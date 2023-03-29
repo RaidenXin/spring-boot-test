@@ -1,13 +1,16 @@
 package com.radien;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.common.http.HttpUtils;
 import com.raiden.model.URLInfo;
 import com.raiden.utils.*;
-import javafx.util.Pair;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
+import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
@@ -28,12 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class AppTest {
 
     private static final Map<String, Function<Integer, Integer>> map = new HashMap<>(2);
@@ -2080,9 +2081,22 @@ public class AppTest {
 
 
     @Test
-    public void test65()  {
-        String order = "cba", s = "abcd";
-        System.err.println(customSortString(order, s));
+    public void test65() throws Exception{
+        String t = "9nQGzqdxeNAusrnBe5jX3stdxszuYOrj7hUHUVOdiGeZI8qllIxUapmxAtaZpztQmXA5qLBDw3cPwtvGISHlKXfi8GGk640F58KlJWixLLr7U23pJSPtiflvM4SKl62UnabzIl6XcN2u2KiJ9bgHDnMg80qEMoaQJdDGtclP4CUSHpblUaixbFbiE0p4xMgsALFcQJhs3RUC7tThDF8PlgxSTLe15ahSzY6d7X9PIY4vgoVldzrfjNb1kQKZYOc2";
+        String n = t.substring(1, 3)
+              ,a = t.substring(10, 12)
+              , c = t.substring(25, 27)
+              , i = t.substring(38, 40)
+              , o = t.substring(50, 52)
+              , r = t.substring(69, 71)
+              , s = t.substring(90, 92)
+              , u = t.substring(120, 122)
+              , d = n + a + c + i + o + r.toLowerCase() + s + u;
+        // accountId: b7f3d2a015db9ceafeba1d639e31b420e24c28714031773257a877d4fdc5bac3
+        long timestamp = System.currentTimeMillis();
+        System.out.println(timestamp);
+        System.err.println(MD5Utils.encode(("b7f3d2a015db9ceafeba1d639e31b420e24c28714031773257a877d4fdc5bac3" + timestamp + d)));
+        String sign = "6614b8dd0d182e701397b1664fa21950";
     }
 
     public String customSortString(String order, String s){
@@ -2097,6 +2111,44 @@ public class AppTest {
             builder.append(c);
         }
         return builder.toString();
+    }
+
+    @Test
+    public void test66() {
+        // 定义PDF文件路径
+        String filePath = "C:\\Users\\Raiden\\Desktop\\skiplists.pdf";
+
+        try {
+
+            // 创建PDF解析器对象
+            PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(filePath));
+            parser.parse();
+
+            // 获取PDF文档对象
+            COSDocument cosDoc = parser.getDocument();
+            PDDocument pdDoc = new PDDocument(cosDoc);
+
+            // 创建PDF文本抽取器对象
+            PDFTextStripper stripper = new PDFTextStripper();
+
+            // 获取PDF文档的页数
+            int numOfPages = pdDoc.getNumberOfPages();
+
+            // 遍历PDF文件的每一页，抽取文本内容并输出到控制台
+            for (int i = 1; i <= numOfPages; i++) {
+                stripper.setStartPage(i);
+                stripper.setEndPage(i);
+                String text = stripper.getText(pdDoc);
+                System.out.println("Page " + i + ":");
+                System.out.println(text);
+            }
+
+            // 关闭PDF文档对象
+            pdDoc.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
