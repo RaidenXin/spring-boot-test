@@ -1903,16 +1903,10 @@ public class AppTest {
 
     @Test
     public void test67() {
-        Stream.of().collect(Collectors.toList());
-        try {
-            Integer test = test(1, null);
-            log.info("result:{}", test);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Integer test = getUnitPrice(1, null);
     }
 
-    private Integer test(int a,Integer b) {
+    private Integer getUnitPrice(int a,Integer b) {
         return a > 0 ? b : a;
     }
 
@@ -1954,6 +1948,24 @@ public class AppTest {
 
     @Test
     public void test70() throws FileNotFoundException {
+        long start = System.currentTimeMillis();
+        Long count1 = 0L;
+        for(int i = 0; i < Integer.MAX_VALUE; i++) {
+            count1 += i;
+        }
+        long end = System.currentTimeMillis();
+        log.error("第一次耗时:{} s", (end - start) / 1000);
+        start = System.currentTimeMillis();
+        long count2 = 0L;
+        for(int i = 0; i < Integer.MAX_VALUE; i++) {
+            count2 += i;
+        }
+        end = System.currentTimeMillis();
+        log.error("第二次耗时:{} s", (end - start) / 1000);
+    }
+
+    @Test
+    public void test71() throws FileNotFoundException {
 
     }
 }
