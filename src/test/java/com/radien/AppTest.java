@@ -1,6 +1,9 @@
 package com.radien;
 
 import com.alibaba.fastjson.JSON;
+import com.raiden.annotation.NRpcScan;
+import com.raiden.controller.OrderController;
+import com.raiden.model.Order;
 import com.raiden.model.URLInfo;
 import com.raiden.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -34,11 +38,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -266,51 +272,6 @@ public class AppTest {
             roots = treeNodes;
             level++;
         }
-    }
-
-
-
-    public class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-        TreeNode() {}
-        TreeNode(int val) { this.val = val; }
-        TreeNode(int val, TreeNode left, TreeNode right) {
-            this.val = val;
-            this.left = left;
-            this.right = right;
-        }
-    }
-
-    @Test
-    public void test10(){
-        TreeNode node1 = new TreeNode(11);
-        TreeNode node2 = new TreeNode(12);
-        TreeNode node3 = new TreeNode(8);
-        node1.left = node2;
-        node1.right = node3;
-
-        TreeNode node4 = new TreeNode(3);
-        TreeNode node6 = new TreeNode(7);
-        node2.left = node4;
-        node2.right = node6;
-
-        TreeNode node7 = new TreeNode(11);
-        node3.left = node7;
-
-
-        TreeNode node12 = new TreeNode(20);
-        node6.right = node12;
-
-        System.err.println(countNodes(node1));
-    }
-
-    public int countNodes(TreeNode root) {
-        if (root == null){
-            return 0;
-        }
-        return 1+countNodes(root.left)+countNodes(root.right);
     }
 
     @Test
@@ -654,152 +615,6 @@ public class AppTest {
         executorService.execute(() -> System.out.println(1111));
         WaitingUtil.waiting(1000);
         executorService.execute(() -> System.out.println(2222));
-    }
-
-
-    class LRUCache {
-
-        private Map<Integer, LRUNode> cache;
-
-        private LRUNode head;
-
-        private LRUNode tail;
-
-        private int capacity;
-
-        private int length;
-
-        public LRUCache(int capacity) {
-            this.capacity = capacity;
-            cache = new HashMap<>(capacity << 1);
-        }
-
-        public int get(int key) {
-            LRUNode lruNode = cache.get(key);
-            boolean isNonNull = lruNode != null;
-            if (isNonNull && lruNode != this.head){
-                disconnectTheList(lruNode);
-                setHead(lruNode);
-            }
-            System.out.println(isNonNull ? lruNode.getValue() : -1);
-            return isNonNull ? lruNode.getValue() : -1;
-        }
-
-        public void put(int key, int value) {
-            //容量没有满不需要淘汰
-            LRUNode lruNode = cache.get(key);
-            boolean isNonHead = this.head != null;
-            //新增
-            if (lruNode == null){
-                lruNode = new LRUNode(key, value);
-                cache.put(key, lruNode);
-                lruNode.setValue(value);
-                if (length == capacity){
-                    //最后一个即是最近最少使用的
-                    //所以淘汰它
-                    LRUNode tail = this.tail;
-                    LRUNode pre = tail.pre();
-                    pre.setNext(null);
-                    this.tail = pre;
-                    //删除淘汰的缓存
-                    cache.remove(tail.getKey());
-                }else {
-                    //新增总数目+1
-                    this.length++;
-                }
-            }else {
-                //修改
-                lruNode.setValue(value);
-                //如果不是头部 要放入头部
-                if (isNonHead = lruNode != this.head){
-                    disconnectTheList(lruNode);
-                }
-            }
-            if (isNonHead){
-                //最新的放入头部
-                setHead(lruNode);
-            }else {
-                this.head = lruNode;
-                this.tail = lruNode;
-            }
-        }
-
-        /**
-         * 断开连接的链表
-         */
-        private void disconnectTheList(LRUNode lruNode){
-            LRUNode pre = lruNode.pre();
-            LRUNode next = lruNode.next();
-            pre.setNext(next);
-            if (next != null){
-                next.setPre(pre);
-            }else {
-                //如果节点的下一个为空就证明这个节点是尾部,
-                // 将它放入头部时要对将它的前一个赋值为尾部
-                this.tail = pre;
-            }
-        }
-
-        private void setHead(LRUNode lruNode){
-            LRUNode head = this.head;
-            head.setPre(lruNode);
-            lruNode.setPre(null);
-            lruNode.setNext(head);
-            this.head = lruNode;
-        }
-
-        class LRUNode{
-            private LRUNode pre;
-            private LRUNode next;
-            private int key;
-            private int value;
-
-            public LRUNode(int key,int value){
-                this.key = key;
-                this.value = value;
-            }
-
-            private LRUNode pre(){
-                return pre;
-            }
-            private LRUNode next(){
-                return next;
-            }
-
-            public void setPre(LRUNode pre) {
-                this.pre = pre;
-            }
-
-            public void setNext(LRUNode next) {
-                this.next = next;
-            }
-
-            public int getKey() {
-                return key;
-            }
-
-            public int getValue() {
-                return value;
-            }
-
-            public void setValue(int value) {
-                this.value = value;
-            }
-        }
-    }
-
-    @Test
-    public void test27() throws UnsupportedEncodingException {
-        LRUCache lRUCache = new LRUCache(2);
-        lRUCache.put(1, 1); // 缓存是 {1=1}
-        lRUCache.put(2, 2); // 缓存是 {1=1, 2=2}
-        lRUCache.get(1);    // 返回 1
-        lRUCache.put(3, 3); // 该操作会使得关键字 2 作废，缓存是 {1=1, 3=3}
-        lRUCache.get(2);    // 返回 -1 (未找到)
-        lRUCache.put(4, 4); // 该操作会使得关键字 1 作废，缓存是 {4=4, 3=3}
-        lRUCache.get(1);    // 返回 -1 (未找到)
-        lRUCache.get(3);    // 返回 3
-        lRUCache.get(4);    // 返回 4
     }
 
     @Test
@@ -1959,71 +1774,6 @@ public class AppTest {
     }
 
     @Test
-    public void test62()  {
-    }
-
-    public List<Integer> preorder(Node root) {
-        if(root == null){
-            return new ArrayList<>();
-        }
-        List<Integer> result = new ArrayList<>();
-        result.add(root.val);
-        if(root.children == null){
-            return result;
-        }
-        List<Node> children = root.children;
-        children.remove(1);
-        if(children != null){
-            Stack<ArrayBlockingQueue<Node>> stack = new Stack<>();
-            for(Node node : children){
-                if(node != null){
-                    do{
-                        result.add(node.val);
-                        List<Node> list = node.children;
-                        ArrayBlockingQueue<Node> queue;
-                        if(list != null){
-                            queue = new ArrayBlockingQueue(list.size());
-                            for(Node n : list){
-                                if(n != null){
-                                    queue.add(n);
-                                }
-                            }
-                            stack.push(queue);
-                            node = queue.poll();
-                        }else{
-                            if(stack.isEmpty()){
-                                break;
-                            }
-                            queue = stack.pop();
-                            if(queue.isEmpty()){
-                                continue;
-                            }
-                            node = queue.poll();
-                        }
-                    }while(true);
-                }
-            }
-        }
-        return result;
-    }
-
-    class Node {
-        public int val;
-        public List<Node> children;
-
-        public Node() {}
-
-        public Node(int _val) {
-            val = _val;
-        }
-
-        public Node(int _val, List<Node> _children) {
-            val = _val;
-            children = _children;
-        }
-    };
-
-    @Test
     public void test63()  {
         int[] nums = {2,0,2,1,1,0};
         System.out.println(nums);
@@ -2149,6 +1899,62 @@ public class AppTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test67() {
+        Stream.of().collect(Collectors.toList());
+        try {
+            Integer test = test(1, null);
+            log.info("result:{}", test);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Integer test(int a,Integer b) {
+        return a > 0 ? b : a;
+    }
+
+    @Test
+    public void test68() throws FileNotFoundException {
+        // 指定文件路径
+        String filePath = "path/to/your/file.txt";
+        // 使用 FileReader 和 BufferedReader 读取文件
+        try (
+                FileReader fileReader = new FileReader(filePath);
+                BufferedReader bufferedReader = new BufferedReader(fileReader)
+        ) {
+            // 读取文件内容
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+               log.info(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void test69() throws FileNotFoundException {
+        Order order1 = new Order("1", "a", 1);
+        Order order2 = new Order("2", "b", 2);
+        Order order3 = new Order("3", "c", 3);
+        Order order4 = new Order("1", "d", 4);
+        List<Order> orders = Arrays.asList(order1, order2, order3, order4);
+        // 如果存在重复可以直接忽略直接覆盖
+        orders.stream().collect(Collectors.toMap(Order::getMemberId, Function.identity(), (a, b) -> a));
+        // 如果存在重复 必须要中断程序 可以抛出自己的业务异常 并记录key
+        orders.stream().collect(Collectors.toMap(Order::getMemberId, Function.identity(),
+                (a, b) -> {
+            throw new RuntimeException("订单中 memberId 存在重复! memberId:" + a.getMemberId());
+        }));
+    }
+
+    @Test
+    public void test70() throws FileNotFoundException {
+
     }
 }
 
